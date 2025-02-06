@@ -1,0 +1,29 @@
+:root {
+    --dark-bg-color: #202120;
+    --grey-color: #8e8f8f;
+    --active-grey-color: #3c3d3a;
+    --light-grey-color: #e5e5e5;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--dark-bg-color);
+}
+
+body,
+svg {
+    color: var(--grey-color)
+}
+
+html,
+body,
+#app {
+    height: 100%;
+    /* Match the window height */
+    width: 100%;
+    /* Match the window width */
+}
