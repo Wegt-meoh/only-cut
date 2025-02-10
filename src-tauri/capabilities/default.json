@@ -23,6 +23,7 @@
         "fs:allow-applocaldata-read-recursive",
         "fs:allow-applocaldata-write-recursive",
         "core:window:allow-maximize",
-        "core:window:allow-unmaximize"
+        "core:window:allow-unmaximize",
+        "core:window:allow-set-cursor-position"
     ]
 }

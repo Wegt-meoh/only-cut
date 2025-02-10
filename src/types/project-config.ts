@@ -31,10 +31,10 @@ interface Asset {
 }
 
 interface AssetMetadata {
-    duration?: number; // In seconds (for video/audio)
-    resolution?: string; // e.g., "1920x1080" (for video/images)
-    codec?: string; // e.g., "H.264" (for video)
-    bitrate?: string; // e.g., "320kbps" (for audio)
+    duration: number; // In seconds (for video/audio)
+    resolution: string; // e.g., "1920x1080" (for video/images)
+    codec: string; // e.g., "H.264" (for video)
+    bitrate: string; // e.g., "320kbps" (for audio)
 }
 
 interface Track {

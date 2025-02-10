@@ -38,8 +38,7 @@ export class StartUp extends LitElement {
             <title-bar></title-bar>                           
             <div>
                 <div class="project-container">
-                    <create-project-card></create-project-card>
-                    
+                    <create-project-card></create-project-card>                    
                 </div>
             </div>
         `

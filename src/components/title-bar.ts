@@ -1,6 +1,6 @@
-import { LitElement, PropertyValues, css, html } from 'lit';
+import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWindow, LogicalPosition, LogicalSize, PhysicalSize } from '@tauri-apps/api/window';
 import { UnlistenFn } from '@tauri-apps/api/event';
 
 @customElement('title-bar')
@@ -52,15 +52,16 @@ export class Titlebar extends LitElement {
     private readyToDragging: boolean = false;
     private isDragging: boolean = false;
     private resizeUnListenerFn: UnlistenFn | null = null;
+    private currentWindow = getCurrentWindow();
 
     async firstUpdated() {
         try {
-            this.resizeUnListenerFn = await getCurrentWindow().onResized(async () => {
-                const value = await getCurrentWindow().isMaximized();
+            this.resizeUnListenerFn = await this.currentWindow.onResized(async () => {
+                const value = await this.currentWindow.isMaximized();
                 this.isFullScreen = value;
             })
         } catch (error) {
-            console.error('Listen window resize error: ', error);
+            console.error('first update error: ', error);
         }
     }
 
@@ -71,42 +72,32 @@ export class Titlebar extends LitElement {
     }
 
     private _windowMinimize = async () => {
-        await getCurrentWindow().minimize();
-    }
-
-    private _toggleMaximize = async () => {
-        if (this.isFullScreen) {
-            await getCurrentWindow().unmaximize();
-        } else {
-            await getCurrentWindow().maximize();
-        }
+        this.currentWindow.minimize();
     }
 
     private _windowClose = async () => {
-        await getCurrentWindow().close();
+        this.currentWindow.close();
     }
 
-    private _handleDoubleClick() {
+    private _toggleMaximize() {
         if (this.isFullScreen) {
-            getCurrentWindow().unmaximize().catch((error) => {
+            this.currentWindow.unmaximize().catch((error) => {
                 console.error('Failed to unmaximize window:', error);
             });
         } else {
-            getCurrentWindow().maximize().catch((error) => {
+            this.currentWindow.maximize().catch((error) => {
                 console.error('Failed to maximize window:', error);
             });
         }
     }
 
-    private _handleMouseMove() {
+    private async _handleMouseMove() {
         if (!this.readyToDragging || this.isDragging) {
             return;
         }
 
         this.isDragging = true;
-        getCurrentWindow().startDragging().catch(error => {
-            console.error('Something error when start dragging: ', error)
-        })
+        await this.currentWindow.startDragging()
     }
 
     private _handleMouseDown(ev: MouseEvent) {
@@ -117,7 +108,7 @@ export class Titlebar extends LitElement {
         }
 
         this.readyToDragging = false;
-        this._handleDoubleClick();
+        this._toggleMaximize();
     }
 
     render() {

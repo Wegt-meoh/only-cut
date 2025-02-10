@@ -34,7 +34,7 @@ export class createProjectCard extends LitElement {
         }        
     `
 
-    private async _createProject() {
+    private async _createNewProject() {
         const currentDate = getCurrentDate();
         const uniquePath = await getUniquePath(await projectConfigDir(), currentDate);
         await mkdir(uniquePath);
@@ -42,7 +42,8 @@ export class createProjectCard extends LitElement {
     }
 
     private async _handleClick() {
-        await this._createProject();
+        console.log(navigator.language)
+        // await this._createProject();
         todo();
     }
 
