@@ -1,9 +1,6 @@
-use states::AppData;
-
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod cmds;
 mod errs;
-mod states;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -12,7 +9,6 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .manage(AppData::app_data(400, 300))
         .invoke_handler(tauri::generate_handler![
             cmds::greet,
             cmds::login,

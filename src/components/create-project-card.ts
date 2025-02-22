@@ -1,9 +1,7 @@
 import { LitElement, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { getCurrentDate } from "../utils/time";
-import { getUniquePath, projectConfigDir } from "../utils/path";
-import { mkdir } from "@tauri-apps/plugin-fs";
 import { todo } from "../utils/helper";
+import { createNewProject } from "../utils/config-manager";
 
 @customElement('create-project-card')
 export class createProjectCard extends LitElement {
@@ -34,16 +32,8 @@ export class createProjectCard extends LitElement {
         }        
     `
 
-    private async _createNewProject() {
-        const currentDate = getCurrentDate();
-        const uniquePath = await getUniquePath(await projectConfigDir(), currentDate);
-        await mkdir(uniquePath);
-        todo();
-    }
-
     private async _handleClick() {
-        console.log(navigator.language)
-        // await this._createProject();
+        await createNewProject();
         todo();
     }
 
@@ -55,3 +45,4 @@ export class createProjectCard extends LitElement {
         `
     }
 }
+

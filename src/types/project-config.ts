@@ -1,8 +1,9 @@
+import * as z from "../utils/z";
+
 export interface MediaEditorProject {
     metadata: {
         name: string;
         version: string;
-        author: string;
         created_at: string; // ISO 8601 date string
         last_modified: string; // ISO 8601 date string
     };
@@ -11,9 +12,9 @@ export interface MediaEditorProject {
         tracks: Track[];
     };
     settings: {
-        resolution: string; // e.g., "1920x1080"
-        framerate: number; // e.g., 30
-        output_format: string; // e.g., "mp4"
+        resolution: string | null; // e.g., "1920x1080"
+        framerate: number | null; // e.g., 30
+        output_format: string | null; // e.g., "mp4"
     };
     state: {
         ui: {
@@ -49,3 +50,52 @@ interface Clip {
     end_time: number; // End time in seconds
     position: number; // Position in timeline
 }
+
+const assetMetadataSchema = z.object({
+    duration: z.number(),
+    resolution: z.string(),
+    codec: z.string(),
+    bitrate: z.string()
+})
+
+const assetSchema = z.object({
+    id: z.string(),
+    type: z.enumSchema(["video", "audio", "image"]),
+    path: z.string(),
+    metadata: assetMetadataSchema
+})
+
+const trackSchema = z.object({
+    id: z.string(),
+    type: z.enumSchema(["video", "audio", "image"]),
+    clips: z.array(z.object({
+        asset_id: z.string(),
+        start_time: z.number(),
+        end_time: z.number(),
+        position: z.number()
+    }))
+})
+
+export const MediaEditorSchema = z.object({
+    metadata: z.object({
+        name: z.string(),
+        version: z.string(),
+        created_at: z.string(),
+        last_modified: z.string()
+    }),
+    assets: z.array(assetSchema),
+    timeline: z.object({
+        tracks: z.array(trackSchema)
+    }),
+    settings: z.object({
+        resolution: z.union([z.string(), z.nullObj()]),
+        framerate: z.union([z.number(), z.nullObj()]),
+        output_format: z.union([z.string(), z.nullObj()])
+    }),
+    state: z.object({
+        ui: z.object({
+            zoom_level: z.number(),
+            current_time_cursor: z.number()
+        })
+    })
+})

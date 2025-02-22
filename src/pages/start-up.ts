@@ -1,10 +1,9 @@
-import { css, html, LitElement } from "lit";
+import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement } from "lit/decorators.js";
-import { appLocalDataDir } from "@tauri-apps/api/path";
-import { readDir } from "@tauri-apps/plugin-fs";
 import "../components/project-card.ts"
 import "../components/title-bar.ts"
 import "../components/create-project-card.ts"
+import { listAllProjects } from "../utils/config-manager.ts";
 
 
 @customElement('start-up')
@@ -26,14 +25,12 @@ export class StartUp extends LitElement {
         }
     `
 
-    render() {
-        // const existProjects = []
-        // const appLocalDataDirPath = await appLocalDataDir()
-        // const entryList = await readDir(appLocalDataDirPath)
-        // entryList.filter(entry => entry.isDirectory).map(entry => {
-        //     entry.name
-        // })
+    async firstUpdated(_changedProperties: PropertyValues) {
+        const projectList = await listAllProjects();
+        console.log(projectList);
+    }
 
+    render() {
         return html`
             <title-bar></title-bar>                           
             <div>
