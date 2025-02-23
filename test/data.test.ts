@@ -1,4 +1,4 @@
-import { MediaEditorSchema } from '../src/types/project-config';
+import { MediaEditorSchema } from '../src/schemas/project-config';
 import { describe, it, expect } from 'vitest';
 
 const exampleMediaEditorProject: any = {

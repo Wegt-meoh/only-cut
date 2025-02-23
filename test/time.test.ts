@@ -1,4 +1,4 @@
-import { getCurrentDate } from '../src/utils/time'
+import { getCurrentDate } from '../src/utils/common';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 describe('test getCurrentTime', () => {

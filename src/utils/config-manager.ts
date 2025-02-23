@@ -1,9 +1,10 @@
 import { basename, join } from "@tauri-apps/api/path";
-import { MediaEditorProject, MediaEditorSchema } from "../types/project-config";
+import { MediaEditorSchema } from "../schemas/project-config";
 import { mkdir, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
 import { getVersion } from "@tauri-apps/api/app";
 import { getUniquePath, projectConfigDir } from "./path";
-import { getCurrentDate } from "./time";
+import { getCurrentDate } from "./common";
+import { MediaEditorProject } from "../types/project-config";
 
 const configFileName = 'project-config.json';
 const keyFileName = 'key';
@@ -94,6 +95,9 @@ export async function createNewProject() {
 
 export async function listAllProjects() {
     const entryList = await readDir(await projectConfigDir());
-    return Promise.all(entryList.filter(entry => entry.isDirectory)
-        .map(async (entry) => await loadProjectConfig(await join(await projectConfigDir(), entry.name))))
+    return (await Promise.all(entryList.filter(entry => entry.isDirectory)
+        .map(async (entry) =>
+            await loadProjectConfig(await join(await projectConfigDir(), entry.name))
+        )
+    )).filter(project => project !== null);
 }

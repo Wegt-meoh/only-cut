@@ -1,6 +1,6 @@
 import { LitElement, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { todo } from "../utils/helper";
+import { todo } from "../utils/common";
 import { createNewProject } from "../utils/config-manager";
 
 @customElement('create-project-card')

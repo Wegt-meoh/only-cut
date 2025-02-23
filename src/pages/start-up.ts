@@ -1,9 +1,11 @@
-import { css, html, LitElement, PropertyValues } from "lit";
-import { customElement } from "lit/decorators.js";
+import { css, html, LitElement } from "lit";
+import { customElement, state } from "lit/decorators.js";
 import "../components/project-card.ts"
 import "../components/title-bar.ts"
 import "../components/create-project-card.ts"
 import { listAllProjects } from "../utils/config-manager.ts";
+import * as z from "../utils/z";
+import { MediaEditorSchema } from "../schemas/project-config.ts";
 
 
 @customElement('start-up')
@@ -25,17 +27,23 @@ export class StartUp extends LitElement {
         }
     `
 
-    async firstUpdated(_changedProperties: PropertyValues) {
+    @state() private projectList: z.infer<typeof MediaEditorSchema>[] = [];
+
+    async firstUpdated() {
         const projectList = await listAllProjects();
-        console.log(projectList);
+        this.projectList = projectList;
     }
 
     render() {
         return html`
-            <title-bar></title-bar>                           
+            <title-bar></title-bar>                              
             <div>
                 <div class="project-container">
-                    <create-project-card></create-project-card>                    
+                    <create-project-card></create-project-card>
+                    ${this.projectList.map(project => html`
+                            <project-card .project=${project}></project-card>
+                        `)
+            }
                 </div>
             </div>
         `
