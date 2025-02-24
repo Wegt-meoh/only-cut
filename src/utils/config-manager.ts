@@ -71,7 +71,8 @@ export async function genertateEditorConfig(name: string) {
             created_at: now,
             last_modified: now,
             name: name,
-            version: await getVersion()
+            version: await getVersion(),
+            cover_path: null
         },
         settings: { framerate: null, output_format: null, resolution: null },
         state: { ui: { zoom_level: 1, current_time_cursor: 0 } },

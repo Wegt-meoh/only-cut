@@ -21,7 +21,16 @@ export class ProjectCard extends LitElement {
             width: 100px;
             height: 100px;
             background: black;
+            overflow: hidden;
             border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cover>img{
+            height:100%;
+
         }
 
         .cover:hover{
@@ -33,7 +42,7 @@ export class ProjectCard extends LitElement {
             margin: 2px 0 2px 0;            
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis;                        
+            text-overflow: ellipsis;
         }   
         
         .desc{
@@ -63,9 +72,12 @@ export class ProjectCard extends LitElement {
     render() {
         const firstTrack = this.project?.timeline.tracks[0];
         const totalTime = firstTrack ? firstTrack.clips.reduce((prev, curr) => prev + curr.end_time - curr.start_time, 0) : 0;
+        const cover_path = this.project?.metadata.cover_path;
 
         return html`
-            <div class="cover" @click="${this._openProject}"></div>
+            <div class="cover" @click="${this._openProject}">                
+                ${cover_path ? html`<img src="${cover_path}"></img>` : html``}
+            </div>
             <div class="name">${this.project?.metadata.name}</div>
             <div class="desc">
                 ${this.size} <seperation-line></seperation-line> ${formatTime(totalTime)}

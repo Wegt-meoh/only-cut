@@ -32,7 +32,8 @@ export const MediaEditorSchema = z.object({
         name: z.string(),
         version: z.string(),
         created_at: z.string(),
-        last_modified: z.string()
+        last_modified: z.string(),
+        cover_path: z.union([z.string(), z.nullObj()])
     }),
     assets: z.array(assetSchema),
     timeline: z.object({
