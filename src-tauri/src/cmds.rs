@@ -1,75 +1,5 @@
-#[tauri::command]
-pub fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
-pub fn login(email: &str, password: &str) -> String {
-    format!(
-        "Welcome login this site by email:{},password:{}",
-        email, password
-    )
-}
-
-use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager};
-use tokio::time::{sleep, Duration};
-
-#[derive(Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct DownloadStarted<'a> {
-    url: &'a str,
-    download_id: usize,
-    content_length: usize,
-}
-
-#[derive(Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct DownloadProgress {
-    download_id: usize,
-    chunk_length: usize,
-}
-
-#[derive(Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct DownloadFinished {
-    download_id: usize,
-}
-
-#[tauri::command]
-pub async fn download(app: AppHandle, url: String) {
-    let content_length = 1000;
-    let download_id = 1;
-
-    app.emit(
-        "download-started",
-        DownloadStarted {
-            url: &url,
-            download_id,
-            content_length,
-        },
-    )
-    .unwrap();
-
-    sleep(Duration::from_secs(2)).await;
-
-    for chunk_length in [15, 150, 35, 500, 300] {
-        app.emit(
-            "download-progress",
-            DownloadProgress {
-                download_id,
-                chunk_length,
-            },
-        )
-        .unwrap();
-        sleep(Duration::from_secs(2)).await;
-    }
-
-    app.emit("download-finished", DownloadFinished { download_id })
-        .unwrap();
-}
-
 use crate::errs;
+use tauri::Manager;
 use tokio::io::AsyncReadExt;
 
 #[tauri::command]
@@ -95,35 +25,6 @@ pub async fn load_image(
 
     reader.send(&[])?;
     Ok(())
-}
-
-#[derive(serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CustomResponse {
-    message: String,
-    other_value: usize,
-}
-
-async fn some_other_function() -> Option<String> {
-    Some("response something".into())
-}
-
-#[tauri::command]
-pub async fn my_custom_function(
-    window: tauri::Window,
-    number: usize,
-) -> Result<CustomResponse, String> {
-    println!("Called from {}", window.label());
-
-    let result = some_other_function().await;
-    if let Some(message) = result {
-        Ok(CustomResponse {
-            message,
-            other_value: 42 + number,
-        })
-    } else {
-        Err("No result".into())
-    }
 }
 
 #[tauri::command]

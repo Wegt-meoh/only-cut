@@ -26,6 +26,7 @@ tokio = "1.41.1"
 thiserror = "2.0.3"
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
+base64 = "0.22.1"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-window-state = "2"
