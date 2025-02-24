@@ -36,16 +36,11 @@ export class StartUp extends LitElement {
 
     render() {
         return html`
-            <title-bar></title-bar>                              
-            <div>
-                <div class="project-container">
-                    <create-project-card></create-project-card>
-                    ${this.projectList.map(project => html`
-                            <project-card .project=${project}></project-card>
-                        `)
-            }
-                </div>
-            </div>
+            <title-bar></title-bar>                                          
+            <div class="project-container">
+                <create-project-card></create-project-card>
+                ${this.projectList.map(project => html`<project-card .project=${project}></project-card>`)}
+            </div>            
         `
     }
 }

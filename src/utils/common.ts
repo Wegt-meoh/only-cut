@@ -19,7 +19,7 @@ export function todo() {
 }
 
 export function formatToReadableSize(size: number) {
-    const units = ["B", "KB", "MB", "GB", "TB"];
+    const units = ["B", "K", "M", "G", "T"];
     let unitIndex = 0;
 
     while (size >= 1024 && unitIndex < units.length - 1) {
@@ -27,7 +27,11 @@ export function formatToReadableSize(size: number) {
         unitIndex++;
     }
 
-    return `${size.toFixed(2)} ${units[unitIndex]}`;
+    if (unitIndex === 0) {
+        return `${size.toFixed(0)}${units[unitIndex]}`;
+    }
+
+    return `${size.toFixed(1)}${units[unitIndex]}`;
 }
 
 export async function calculateFolderSize(path: string) {
@@ -50,4 +54,20 @@ export async function calculateFolderSize(path: string) {
 
     await traverse(path);
     return totalSize;
+}
+
+function addPrefixZero(x: number) {
+    return x >= 10 ? "" + x : "0" + x;
+}
+
+export function formatTime(time: number) {
+    const hour = Math.floor(time / 3600)
+    const minute = Math.floor((time - hour * 3600) / 60)
+    const second = time - hour * 3600 - minute * 60
+
+    if (hour === 0 && minute >= 0) {
+        return `${addPrefixZero(minute)}:${addPrefixZero(second)}`
+    }
+
+    return `${addPrefixZero(hour)}:${addPrefixZero(minute)}:${addPrefixZero(second)}`
 }
