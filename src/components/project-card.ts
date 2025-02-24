@@ -55,7 +55,8 @@ export class ProjectCard extends LitElement {
 
     protected async firstUpdated() {
         if (this.project) {
-            this.size = formatToReadableSize(await calculateFolderSize(await join(await projectConfigDir(), this.project.metadata.name)))
+            const projectFolderPath = await join(await projectConfigDir(), this.project.metadata.name);
+            this.size = formatToReadableSize(await calculateFolderSize(projectFolderPath))
         }
     }
 
