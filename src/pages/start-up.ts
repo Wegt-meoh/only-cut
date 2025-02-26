@@ -14,8 +14,17 @@ export class StartUp extends LitElement {
         :host{
             display: grid;
             grid-template-rows: 30px  1fr;
-            height: 100%;            
-        }          
+            height: 100%;
+            overflow: hidden;
+        }
+
+        main{
+            overflow-x: hidden;
+            overflow-y: scroll;
+            scrollbar-width: thin;
+            scrollbar-color: transparent transparent;   
+            transition: scrollbar-color 0.3s;
+        }
         
         .project-container{
             height: fit-content;
@@ -24,25 +33,20 @@ export class StartUp extends LitElement {
             flex-wrap: wrap;
             gap: 14px;
             justify-content: start;
-            align-items: normal;
-            overflow-x: hidden;
-            overflow-y: scroll;
-            scrollbar-width: thin;
-            scrollbar-color: transparent transparent;   
-            transition: scrollbar-color 0.3s;
+            align-items: normal;            
         }       
         
-        .project-container::-webkit-scrollbar{
+        main::-webkit-scrollbar{
             width: 8px;            
         }
 
-        .project-container::-webkit-scrollbar-thumb {
+        main::-webkit-scrollbar-thumb {
             background-color: #888;
             border-radius: 4px;
             transition: backgournd-color 0.3s;
         }
 
-        .project-container::-webkit-scrollbar-track {
+        main::-webkit-scrollbar-track {
             background-color: transparent;
         }        
 
@@ -81,7 +85,7 @@ export class StartUp extends LitElement {
     `
 
     @state() private projectList: z.infer<typeof MediaEditorSchema>[] = [];
-    @state() private containerStyle = "";// used for scrollbar style
+    @state() private scrollbarStyle = "";// used for scrollbar style
     @state() private isSubMenuVisible: boolean = false;
     @state() private subMenuStyle = "";
     private scrollTimer: number | null = null;
@@ -108,10 +112,10 @@ export class StartUp extends LitElement {
             clearTimeout(this.scrollTimer);
         }
 
-        this.containerStyle = `scrollbar-color: #888 transparent;`
+        this.scrollbarStyle = `scrollbar-color: #888 transparent;`
 
         this.scrollTimer = setTimeout(() => {
-            this.containerStyle = "";
+            this.scrollbarStyle = "";
         }, 500)
     }
 
@@ -156,10 +160,12 @@ export class StartUp extends LitElement {
     render() {
         return html`
             <title-bar></title-bar>
-            <div class="project-container" @scroll=${this._handleScroll} style=${this.containerStyle}>
-                <create-project-card></create-project-card>
-                ${this.projectList.map(project => html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`)}
-            </div>         
+            <main style=${this.scrollbarStyle} @scroll=${this._handleScroll}>
+                <div class="project-container">
+                    <create-project-card></create-project-card>
+                    ${this.projectList.map(project => html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`)}
+                </div>
+            </main>            
             <global-mask .visible=${this.isSubMenuVisible} @mask-closed=${this._closeMask}></global-mask>         
             <div class=${"sub-menu" + (this.isSubMenuVisible === true ? " visible" : "")} style=${this.subMenuStyle}>
                 <div>rename</div>
