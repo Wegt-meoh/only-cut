@@ -81,7 +81,7 @@ export class StartUp extends LitElement {
     `
 
     @state() private projectList: z.infer<typeof MediaEditorSchema>[] = [];
-    @state() private containerStyle = "";
+    @state() private containerStyle = "";// used for scrollbar style
     @state() private isSubMenuVisible: boolean = false;
     @state() private subMenuStyle = "";
     private scrollTimer: number | null = null;
