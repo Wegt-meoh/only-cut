@@ -10,13 +10,12 @@
         "frontendDist": "../dist"
     },
     "app": {
-        "withGlobalTauri": true,
         "windows": [
             {
                 "title": "Only Cut",
                 "decorations": false,
-                "minWidth": 830,
-                "minHeight": 630
+                "minWidth": 843,
+                "minHeight": 640
             }
         ],
         "security": {
