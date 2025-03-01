@@ -3,9 +3,10 @@ import { customElement, state } from "lit/decorators.js";
 import "../components/project-card.ts"
 import "../components/title-bar.ts"
 import "../components/create-project-card.ts"
-import { listAllProjects } from "../utils/config-manager.ts";
+import { copyProject, deleteProject, listAllProjects } from "../utils/config-manager.ts";
 import * as z from "../utils/z";
 import { MediaEditorSchema } from "../schemas/project-config.ts";
+import { MediaEditorProject } from "../types/project-config.ts";
 
 
 @customElement('start-up')
@@ -91,6 +92,7 @@ export class StartUp extends LitElement {
     private scrollTimer: number | null = null;
     private menuElement: HTMLDivElement | null = null;
     private subMenuElement: HTMLDivElement | null = null;
+    private menuProjectConfig: MediaEditorProject | null = null;
     private resizeListener = () => {
         this._handleResize()
     }
@@ -99,7 +101,6 @@ export class StartUp extends LitElement {
     async firstUpdated() {
         const projectList = await listAllProjects();
         this.projectList = projectList;
-
         window.addEventListener("resize", this.resizeListener)
     }
 
@@ -125,6 +126,7 @@ export class StartUp extends LitElement {
     }
 
     private _showSubMenu(ev: CustomEvent) {
+        this.menuProjectConfig = ev.detail.project ?? null;
         this.menuElement = ev.detail.menuElement
         this.subMenuElement = this.shadowRoot?.querySelector('.sub-menu') ?? null;
 
@@ -157,23 +159,59 @@ export class StartUp extends LitElement {
         return `${windowWidth >= subMenuRightBound ? "left: " + x + "px" : "left: " + (windowWidth - subMenuWidth) + "px"};${windowHeight >= subMenuBottomBound ? "top: " + y + "px" : "top: " + (windowHeight - subMenuHeight) + "px"}`;
     }
 
+    private _rename() {
+
+    }
+
+    private async _copy() {
+        if (!this.menuProjectConfig) {
+            throw new Error("menu project config is null")
+        }
+
+        const newProject = await copyProject(this.menuProjectConfig);
+
+        if (!newProject) {
+            throw new Error("copy project can not be loaded")
+        }
+
+        this.projectList = [newProject, ...this.projectList]
+        this._closeMask()
+    }
+
+    private _new(ev: CustomEvent) {
+        const newProjectConfig = ev.detail.config
+        this.projectList = [newProjectConfig, ...this.projectList]
+    }
+
+    private async _delete() {
+        if (!this.menuProjectConfig) {
+            throw new Error("menu project config is null")
+        }
+
+        await deleteProject(this.menuProjectConfig.metadata.name)
+
+        this.projectList = this.projectList.filter(item => item.metadata.name !== this.menuProjectConfig?.metadata.name)
+        console.log(this.projectList[0].metadata)
+        this._closeMask()
+    }
+
     render() {
         return html`
             <title-bar></title-bar>
             <main style=${this.scrollbarStyle} @scroll=${this._handleScroll}>
                 <div class="project-container">
-                    <create-project-card></create-project-card>
-                    ${this.projectList.map(project => html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`)}
+                    <create-project-card @newProject=${this._new}></create-project-card>
+                    ${this.projectList.sort((a, b) => {
+            return Date.parse(b.metadata.last_modified) - Date.parse(a.metadata.last_modified);
+        }).map(project => html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`)}
                 </div>
             </main>            
             <global-mask .visible=${this.isSubMenuVisible} @mask-closed=${this._closeMask}></global-mask>         
             <div class=${"sub-menu" + (this.isSubMenuVisible === true ? " visible" : "")} style=${this.subMenuStyle}>
-                <div>rename</div>
-                <div>copy</div>
-                <div>delete</div>
+                <div @click=${this._rename}>rename</div>
+                <div @click=${this._copy}>copy</div>
+                <div @click=${this._delete}>delete</div>
             </div>  
         `
     }
 }
-
-

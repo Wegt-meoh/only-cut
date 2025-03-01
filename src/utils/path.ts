@@ -12,8 +12,6 @@ export async function getUniquePath(targetDirPath: string, name: string) {
         }
     }
 
-    console.log(currentPath)
-
     if (!currentPath) {
         throw new Error('unique path is undefine')
     }

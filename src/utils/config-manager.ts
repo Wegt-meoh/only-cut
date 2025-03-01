@@ -1,13 +1,23 @@
 import { basename, join } from "@tauri-apps/api/path";
 import { MediaEditorSchema } from "../schemas/project-config";
-import { mkdir, readDir, readTextFile, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
 import { getVersion } from "@tauri-apps/api/app";
 import { getUniquePath, projectConfigDir } from "./path";
 import { getCurrentDate } from "./common";
 import { MediaEditorProject } from "../types/project-config";
+import { invoke } from "@tauri-apps/api/core";
 
 const configFileName = 'project-config.json';
 const keyFileName = 'key';
+
+export async function getProjectPath(name: string) {
+    const projectPath = await join(await projectConfigDir(), name)
+    if (await exists(projectPath)) {
+        return projectPath
+    } else {
+        return null;
+    }
+}
 
 function obfuscateData(config: MediaEditorProject, key: string) {
     const jsonData = JSON.stringify(config);
@@ -82,16 +92,48 @@ export async function genertateEditorConfig(name: string) {
     return MediaEditorSchema.parse(config);
 }
 
-export async function createNewProject() {
-    // ceate project directory
-    const currentDate = getCurrentDate();
-    const uniquePath = await getUniquePath(await projectConfigDir(), currentDate);
+async function createProjectDir(name: string) {
+    const uniquePath = await getUniquePath(await projectConfigDir(), name);
     await mkdir(uniquePath, { recursive: true });
+    return uniquePath
+}
+
+export async function copyProject(project: MediaEditorProject) {
+    const projectPath = await createProjectDir(project.metadata.name)
+    const now = new Date().toLocaleString();
+    const newMetadata = {
+        ...project.metadata,
+        name: await basename(projectPath),
+        last_modified: now,
+        created_at: now,
+        version: await getVersion(),
+    }
+    await persistProjectConfig({ ...project, metadata: newMetadata }, projectPath)
+    return loadProjectConfig(projectPath)
+}
+
+export async function createNewProject() {
+    // ceate project directory    
+    const uniquePath = await createProjectDir(getCurrentDate())
 
     // generate project config file
     const projectName = await basename(uniquePath);
     const projectConfig = await genertateEditorConfig(projectName);
     await persistProjectConfig(projectConfig, uniquePath);
+    return projectConfig
+}
+
+export async function deleteProject(name: string) {
+    const projectPath = await getProjectPath(name)
+    if (!projectPath) {
+        return;
+    }
+
+    try {
+        await invoke("move_to_trash", { path: projectPath })
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 export async function listAllProjects() {

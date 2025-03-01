@@ -87,6 +87,7 @@ export class ProjectCard extends LitElement {
         this.dispatchEvent(new CustomEvent("show-submenu", {
             detail: {
                 menuElement,
+                project: this.project
             },
             bubbles: false,
             composed: false

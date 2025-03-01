@@ -22,6 +22,8 @@
         "fs:allow-appconfig-write-recursive",
         "fs:allow-applocaldata-read-recursive",
         "fs:allow-applocaldata-write-recursive",
+        "fs:allow-watch",
+        "fs:allow-unwatch",
         "core:window:allow-maximize",
         "core:window:allow-unmaximize",
         "core:window:allow-set-cursor-position"

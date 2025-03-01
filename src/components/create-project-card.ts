@@ -1,6 +1,5 @@
 import { LitElement, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { todo } from "../utils/common";
 import { createNewProject } from "../utils/config-manager";
 
 @customElement('create-project-card')
@@ -33,8 +32,12 @@ export class createProjectCard extends LitElement {
     `
 
     private async _handleClick() {
-        await createNewProject();
-        todo();
+        const config = await createNewProject();
+        this.dispatchEvent(new CustomEvent("newProject", {
+            detail: {
+                config
+            }
+        }))
     }
 
     render() {

@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use crate::errs;
 use tauri::Manager;
 use tokio::io::AsyncReadExt;
@@ -72,4 +74,17 @@ pub async fn ffprobe(app: tauri::AppHandle, file_path: String) -> Result<(), err
     });
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn move_to_trash(path: String) -> Result<(), String> {
+    let path = Path::new(&path);
+    if !path.exists() {
+        return Err("Path does not exist".to_string());
+    }
+
+    match trash::delete(path) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(format!("Failed to move to trash: {}", e)),
+    }
 }
