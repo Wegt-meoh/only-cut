@@ -42,3 +42,6 @@ async function userDataDir() {
 export const projectConfigDirPath = await projectsConfigDir();
 
 export const userDataDirPath = await userDataDir();
+
+export const configFileName = 'project-config.json';
+export const keyFileName = 'key';

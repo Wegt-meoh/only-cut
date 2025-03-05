@@ -2,47 +2,11 @@ import { basename, join } from "@tauri-apps/api/path";
 import { MediaEditorSchema } from "../schemas/project-config";
 import { exists, mkdir, readDir, readTextFile, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { getVersion } from "@tauri-apps/api/app";
-import { getUniquePath, projectConfigDirPath } from "./path";
+import { configFileName, getUniquePath, keyFileName, projectConfigDirPath } from "./path";
 import { getCurrentDate } from "./common";
 import { MediaEditorProject } from "../types/project-config";
 import { invoke } from "@tauri-apps/api/core";
-
-const configFileName = 'project-config.json';
-const keyFileName = 'key';
-
-function obfuscateData(config: MediaEditorProject, key: string) {
-    const jsonData = JSON.stringify(config);
-    const masked = xorMask(jsonData, key);
-    return btoa(masked);
-}
-
-function deobfuscateData(data: string, key: string): MediaEditorProject {
-    const masked = atob(data);
-    const jsonData = xorMask(masked, key);
-    const jsonObj = JSON.parse(jsonData);
-
-    try {
-        return MediaEditorSchema.parse(jsonObj);
-    } catch (error) {
-        throw new Error('Media editor project is broken or uncompatible')
-    }
-}
-
-function xorMask(data: string, key: string) {
-    return data
-        .split('')
-        .map((char, index) => String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(index % key.length)))
-        .join('');
-}
-
-function generateKey(length: number) {
-    if (length <= 0) {
-        throw new Error('length needs to be larger than 0');
-    }
-    const array = new Uint8Array(length);
-    crypto.getRandomValues(array);
-    return Array.from(array, byte => String.fromCharCode(byte % 94 + 33)).join('');
-}
+import { generateKey, obfuscateData, deobfuscateData } from "./cypher";
 
 export async function persistProjectConfig(config: MediaEditorProject, projectDirPath: string) {
     const key = generateKey(16);
