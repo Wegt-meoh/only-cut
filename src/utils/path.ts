@@ -39,9 +39,9 @@ async function userDataDir() {
     return result;
 }
 
-export const projectConfigDirPath = await projectsConfigDir();
+export const appProjectConfigDirPath = await projectsConfigDir();
 
-export const userDataDirPath = await userDataDir();
+export const appUserDataDirPath = await userDataDir();
 
 export const configFileName = 'project-config.json';
 export const keyFileName = 'key';

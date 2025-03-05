@@ -14,6 +14,15 @@ export function getCurrentDate() {
     }
 }
 
+export function copyText() {
+    switch (navigator.language) {
+        case "zh-CN":
+            return "副本"
+        default:
+            return "copy"
+    }
+}
+
 export function todo() {
     throw new Error('something todo here...')
 }

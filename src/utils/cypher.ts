@@ -1,13 +1,13 @@
 import { MediaEditorSchema } from "../schemas/project-config";
-import { MediaEditorProject } from "../types/project-config";
+import { MediaEditorConfig } from "../types/project-config";
 
-export function obfuscateData(config: MediaEditorProject, key: string) {
+export function obfuscateData(config: MediaEditorConfig, key: string) {
     const jsonData = JSON.stringify(config);
     const masked = xorMask(jsonData, key);
     return btoa(masked);
 }
 
-export function deobfuscateData(data: string, key: string): MediaEditorProject {
+export function deobfuscateData(data: string, key: string): MediaEditorConfig {
     const masked = atob(data);
     const jsonData = xorMask(masked, key);
     const jsonObj = JSON.parse(jsonData);

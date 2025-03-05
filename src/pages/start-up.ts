@@ -3,7 +3,7 @@ import { customElement, state } from "lit/decorators.js";
 import "../components/project-card.ts"
 import "../components/title-bar.ts"
 import "../components/create-project-card.ts"
-import { copyProject, deleteProject, listAllProjects, updateProject } from "../utils/config-manager.ts";
+import { copyProject, deleteProject, listAllProjects, renameProject } from "../utils/config-manager.ts";
 import { MediaEditorProject } from "../types/project-config.ts";
 
 
@@ -102,16 +102,14 @@ export class StartUp extends LitElement {
     private nameElement?: HTMLDivElement;
     private menuElement?: HTMLDivElement;
     private subMenuElement?: HTMLDivElement;
-    private menuProjectConfig?: MediaEditorProject;
+    private focusedProject?: MediaEditorProject;
     private inputElemnt?: HTMLInputElement;
     private resizeListener = () => {
         this._handleResize()
     }
 
     async firstUpdated() {
-        const projectList = await listAllProjects();
-        this.projectList = projectList;
-        console.log(projectList)
+        this.projectList = await listAllProjects();
 
         this.inputElemnt = this.shadowRoot?.querySelector("input") ?? undefined
         this.subMenuElement = this.shadowRoot?.querySelector('.sub-menu') ?? undefined;
@@ -146,7 +144,7 @@ export class StartUp extends LitElement {
 
     private _showSubMenu(ev: CustomEvent) {
         this.nameElement = ev.detail.nameElement;
-        this.menuProjectConfig = ev.detail.project;
+        this.focusedProject = ev.detail.project;
         this.menuElement = ev.detail.menuElement;
 
         this.subMenuStyle = this._calcSubMenuStyle()
@@ -189,11 +187,11 @@ export class StartUp extends LitElement {
     }
 
     private async _copy() {
-        if (!this.menuProjectConfig) {
-            throw new Error("menu project config is null")
+        if (!this.focusedProject) {
+            throw new Error("menu project config or name is undefined")
         }
 
-        const newProject = await copyProject(this.menuProjectConfig);
+        const newProject = await copyProject(this.focusedProject);
 
         if (!newProject) {
             throw new Error("copy project can not be loaded")
@@ -209,13 +207,13 @@ export class StartUp extends LitElement {
     }
 
     private async _delete() {
-        if (!this.menuProjectConfig) {
-            throw new Error("menu project config is null")
+        if (!this.focusedProject) {
+            throw new Error("menu project config or name is undefined")
         }
 
-        await deleteProject(this.menuProjectConfig.metadata.name)
+        await deleteProject(this.focusedProject.name)
 
-        this.projectList = this.projectList.filter(item => item.metadata.name !== this.menuProjectConfig?.metadata.name)
+        this.projectList = this.projectList.filter(item => item.name !== this.focusedProject?.name)
         this._closeMask()
     }
 
@@ -224,9 +222,13 @@ export class StartUp extends LitElement {
             throw new Error("input element is undefined")
         }
 
+        if (!this.focusedProject) {
+            throw new Error("focused project is undefined")
+        }
+
         this.renaming = true
         this._closeMask()
-        this.inputElemnt.value = this.menuProjectConfig?.metadata.name ?? ""
+        this.inputElemnt.value = this.focusedProject.name
         this.inputElemnt.focus()
         this.inputElemnt.setSelectionRange(0, this.inputElemnt.value.length)
         this.inputStyle = this._calcInputStyle()
@@ -235,25 +237,33 @@ export class StartUp extends LitElement {
     private async _handleInputBlur() {
         this.renaming = false
 
-        if (!this.menuProjectConfig) {
-            throw new Error("menu project config is undefined")
+        if (!this.inputElemnt) {
+            throw new Error("input element is undefined")
         }
 
-        if (!this.projectList.every(p => p.metadata.name !== this.inputElemnt?.value)) {
+        const newName = this.inputElemnt.value
+        if (newName.length <= 0) {
             return;
         }
 
-        const oldName = this.menuProjectConfig.metadata.name;
-        this.menuProjectConfig.metadata.name = this.inputElemnt?.value ?? ""
-        await updateProject(this.menuProjectConfig, oldName);
-        this.projectList = [...this.projectList.filter(item => item !== this.menuProjectConfig), { ...this.menuProjectConfig }]
+        if (!this.focusedProject) {
+            throw new Error("menu project config is undefined")
+        }
+
+        if (!this.projectList.every(p => p.name !== newName)) {
+            return;
+        }
+
+        console.log(this.focusedProject)
+        await renameProject(this.focusedProject.name, newName);
+        this.projectList = [...this.projectList.filter(item => item !== this.focusedProject), { ...this.focusedProject, name: newName }]
     }
 
     render() {
         const sortedList = this.projectList.sort((a, b) => {
-            return Date.parse(b.metadata.last_modified) - Date.parse(a.metadata.last_modified);
+            return Date.parse(b.config.metadata.last_modified) - Date.parse(a.config.metadata.last_modified);
         }).map(project => {
-            console.log(Date.parse(project.metadata.last_modified))
+            console.log(Date.parse(project.config.metadata.last_modified))
             return html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`
         })
 

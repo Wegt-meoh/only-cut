@@ -29,7 +29,6 @@ const trackSchema = z.object({
 
 export const MediaEditorSchema = z.object({
     metadata: z.object({
-        name: z.string(),
         version: z.string(),
         created_at: z.string(),
         last_modified: z.string(),
