@@ -88,8 +88,9 @@ export async function createNewProject() {
 
     // generate project config file    
     const projectConfig = await genertateEditorConfig();
-    await persistProjectConfig({ config: projectConfig, name: uniqueName });
-    return projectConfig
+    const project = { config: projectConfig, name: uniqueName }
+    await persistProjectConfig(project);
+    return project
 }
 
 export async function deleteProject(name: string) {
