@@ -1,5 +1,5 @@
 import { appLocalDataDir, join } from "@tauri-apps/api/path";
-import { exists } from "@tauri-apps/plugin-fs";
+import { exists, mkdir } from "@tauri-apps/plugin-fs";
 
 export async function getUniquePath(targetDirPath: string, name: string) {
     let currentPath = await join(targetDirPath, name);
@@ -19,10 +19,26 @@ export async function getUniquePath(targetDirPath: string, name: string) {
     return currentPath
 }
 
-export async function projectConfigDir() {
-    return await join(await userDataDir(), "projects")
+async function projectsConfigDir() {
+    const result = await join(await userDataDir(), "projects")
+
+    if (! await exists(result)) {
+        await mkdir(result)
+    }
+
+    return result
 }
 
-export async function userDataDir() {
-    return await join(await appLocalDataDir(), "user_data");
-} 
+async function userDataDir() {
+    const result = await join(await appLocalDataDir(), "user_data");
+
+    if (! await exists(result)) {
+        await mkdir(result)
+    }
+
+    return result;
+}
+
+export const projectConfigDirPath = await projectsConfigDir();
+
+export const userDataDirPath = await userDataDir();

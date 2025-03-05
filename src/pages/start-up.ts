@@ -3,9 +3,7 @@ import { customElement, state } from "lit/decorators.js";
 import "../components/project-card.ts"
 import "../components/title-bar.ts"
 import "../components/create-project-card.ts"
-import { copyProject, deleteProject, listAllProjects } from "../utils/config-manager.ts";
-import * as z from "../utils/z";
-import { MediaEditorSchema } from "../schemas/project-config.ts";
+import { copyProject, deleteProject, listAllProjects, updateProject } from "../utils/config-manager.ts";
 import { MediaEditorProject } from "../types/project-config.ts";
 
 
@@ -32,7 +30,7 @@ export class StartUp extends LitElement {
             padding: 1rem;
             display: flex;
             flex-wrap: wrap;
-            gap: 14px;
+            gap: 28px;
             justify-content: start;
             align-items: normal;            
         }       
@@ -67,7 +65,7 @@ export class StartUp extends LitElement {
             left: 10000px;
         }        
 
-        .sub-menu.visible{            
+        .visible{            
             opacity: 1;
         }
 
@@ -83,24 +81,41 @@ export class StartUp extends LitElement {
         .sub-menu>*:hover{
             background-color: var(--grey-color)
         }
+
+        input{
+            position: fixed;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            border: none;
+            outline: none;            
+        }
     `
 
-    @state() private projectList: z.infer<typeof MediaEditorSchema>[] = [];
-    @state() private scrollbarStyle = "";// used for scrollbar style
+    @state() private projectList: MediaEditorProject[] = [];
+    @state() private scrollbarStyle = ""; // used for scrollbar style
     @state() private isSubMenuVisible: boolean = false;
     @state() private subMenuStyle = "";
-    private scrollTimer: number | null = null;
-    private menuElement: HTMLDivElement | null = null;
-    private subMenuElement: HTMLDivElement | null = null;
-    private menuProjectConfig: MediaEditorProject | null = null;
+    @state() private inputStyle = "";
+    @state() private renaming = false;
+    private scrollTimer?: number;
+    private nameElement?: HTMLDivElement;
+    private menuElement?: HTMLDivElement;
+    private subMenuElement?: HTMLDivElement;
+    private menuProjectConfig?: MediaEditorProject;
+    private inputElemnt?: HTMLInputElement;
     private resizeListener = () => {
         this._handleResize()
     }
 
-
     async firstUpdated() {
         const projectList = await listAllProjects();
         this.projectList = projectList;
+        console.log(projectList)
+
+        this.inputElemnt = this.shadowRoot?.querySelector("input") ?? undefined
+        this.subMenuElement = this.shadowRoot?.querySelector('.sub-menu') ?? undefined;
+
         window.addEventListener("resize", this.resizeListener)
     }
 
@@ -118,6 +133,10 @@ export class StartUp extends LitElement {
         this.scrollTimer = setTimeout(() => {
             this.scrollbarStyle = "";
         }, 500)
+
+        if (this.renaming) {
+            this.inputStyle = this._calcInputStyle()
+        }
     }
 
     private _closeMask() {
@@ -126,21 +145,21 @@ export class StartUp extends LitElement {
     }
 
     private _showSubMenu(ev: CustomEvent) {
-        this.menuProjectConfig = ev.detail.project ?? null;
-        this.menuElement = ev.detail.menuElement
-        this.subMenuElement = this.shadowRoot?.querySelector('.sub-menu') ?? null;
+        this.nameElement = ev.detail.nameElement;
+        this.menuProjectConfig = ev.detail.project;
+        this.menuElement = ev.detail.menuElement;
 
-        this.subMenuStyle = this._calcNewStyle()
+        this.subMenuStyle = this._calcSubMenuStyle()
         this.isSubMenuVisible = true;
     }
 
     private _handleResize() {
         if (this.isSubMenuVisible) {
-            this.subMenuStyle = this._calcNewStyle();
+            this.subMenuStyle = this._calcSubMenuStyle();
         }
     }
 
-    private _calcNewStyle() {
+    private _calcSubMenuStyle() {
         const subMenuBoundingRect = this.subMenuElement?.getBoundingClientRect();
         const menuBoudingRect = this.menuElement?.getBoundingClientRect();
         if (!menuBoudingRect || !subMenuBoundingRect) {
@@ -159,8 +178,14 @@ export class StartUp extends LitElement {
         return `${windowWidth >= subMenuRightBound ? "left: " + x + "px" : "left: " + (windowWidth - subMenuWidth) + "px"};${windowHeight >= subMenuBottomBound ? "top: " + y + "px" : "top: " + (windowHeight - subMenuHeight) + "px"}`;
     }
 
-    private _rename() {
+    private _calcInputStyle() {
+        const nameElementRect = this.nameElement?.getBoundingClientRect()
 
+        if (!nameElementRect) {
+            throw new Error("name element rect is undefined")
+        }
+
+        return `width:${nameElementRect.width - 4}px;left:${nameElementRect.left}px;top:${nameElementRect.top}px`
     }
 
     private async _copy() {
@@ -191,19 +216,53 @@ export class StartUp extends LitElement {
         await deleteProject(this.menuProjectConfig.metadata.name)
 
         this.projectList = this.projectList.filter(item => item.metadata.name !== this.menuProjectConfig?.metadata.name)
-        console.log(this.projectList[0].metadata)
         this._closeMask()
     }
 
+    private _rename() {
+        if (!this.inputElemnt) {
+            throw new Error("input element is undefined")
+        }
+
+        this.renaming = true
+        this._closeMask()
+        this.inputElemnt.value = this.menuProjectConfig?.metadata.name ?? ""
+        this.inputElemnt.focus()
+        this.inputElemnt.setSelectionRange(0, this.inputElemnt.value.length)
+        this.inputStyle = this._calcInputStyle()
+    }
+
+    private async _handleInputBlur() {
+        this.renaming = false
+
+        if (!this.menuProjectConfig) {
+            throw new Error("menu project config is undefined")
+        }
+
+        if (!this.projectList.every(p => p.metadata.name !== this.inputElemnt?.value)) {
+            return;
+        }
+
+        const oldName = this.menuProjectConfig.metadata.name;
+        this.menuProjectConfig.metadata.name = this.inputElemnt?.value ?? ""
+        await updateProject(this.menuProjectConfig, oldName);
+        this.projectList = [...this.projectList.filter(item => item !== this.menuProjectConfig), { ...this.menuProjectConfig }]
+    }
+
     render() {
+        const sortedList = this.projectList.sort((a, b) => {
+            return Date.parse(b.metadata.last_modified) - Date.parse(a.metadata.last_modified);
+        }).map(project => {
+            console.log(Date.parse(project.metadata.last_modified))
+            return html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`
+        })
+
         return html`
             <title-bar></title-bar>
             <main style=${this.scrollbarStyle} @scroll=${this._handleScroll}>
                 <div class="project-container">
                     <create-project-card @newProject=${this._new}></create-project-card>
-                    ${this.projectList.sort((a, b) => {
-            return Date.parse(b.metadata.last_modified) - Date.parse(a.metadata.last_modified);
-        }).map(project => html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`)}
+                    ${sortedList}
                 </div>
             </main>            
             <global-mask .visible=${this.isSubMenuVisible} @mask-closed=${this._closeMask}></global-mask>         
@@ -212,6 +271,7 @@ export class StartUp extends LitElement {
                 <div @click=${this._copy}>copy</div>
                 <div @click=${this._delete}>delete</div>
             </div>  
+            <input type="text" @blur=${this._handleInputBlur} class=${this.renaming ? "visible" : ""} style=${this.inputStyle}>
         `
     }
 }

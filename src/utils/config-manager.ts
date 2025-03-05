@@ -1,23 +1,14 @@
 import { basename, join } from "@tauri-apps/api/path";
 import { MediaEditorSchema } from "../schemas/project-config";
-import { exists, mkdir, readDir, readTextFile, remove, writeTextFile } from "@tauri-apps/plugin-fs";
+import { exists, mkdir, readDir, readTextFile, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { getVersion } from "@tauri-apps/api/app";
-import { getUniquePath, projectConfigDir } from "./path";
+import { getUniquePath, projectConfigDirPath } from "./path";
 import { getCurrentDate } from "./common";
 import { MediaEditorProject } from "../types/project-config";
 import { invoke } from "@tauri-apps/api/core";
 
 const configFileName = 'project-config.json';
 const keyFileName = 'key';
-
-export async function getProjectPath(name: string) {
-    const projectPath = await join(await projectConfigDir(), name)
-    if (await exists(projectPath)) {
-        return projectPath
-    } else {
-        return null;
-    }
-}
 
 function obfuscateData(config: MediaEditorProject, key: string) {
     const jsonData = JSON.stringify(config);
@@ -56,7 +47,10 @@ function generateKey(length: number) {
 export async function persistProjectConfig(config: MediaEditorProject, projectDirPath: string) {
     const key = generateKey(16);
     const obfuscatedConfig = obfuscateData(config, key);
+
+    // write the config file
     await writeTextFile(await join(projectDirPath, configFileName), obfuscatedConfig);
+    //write the key file
     await writeTextFile(await join(projectDirPath, keyFileName), key);
 }
 
@@ -93,7 +87,7 @@ export async function genertateEditorConfig(name: string) {
 }
 
 async function createProjectDir(name: string) {
-    const uniquePath = await getUniquePath(await projectConfigDir(), name);
+    const uniquePath = await getUniquePath(projectConfigDirPath, name);
     await mkdir(uniquePath, { recursive: true });
     return uniquePath
 }
@@ -124,8 +118,8 @@ export async function createNewProject() {
 }
 
 export async function deleteProject(name: string) {
-    const projectPath = await getProjectPath(name)
-    if (!projectPath) {
+    const projectPath = await join(projectConfigDirPath, name)
+    if (!await exists(projectPath)) {
         return;
     }
 
@@ -137,10 +131,25 @@ export async function deleteProject(name: string) {
 }
 
 export async function listAllProjects() {
-    const entryList = await readDir(await projectConfigDir());
+    const entryList = await readDir(projectConfigDirPath);
     return (await Promise.all(entryList.filter(entry => entry.isDirectory)
         .map(async (entry) =>
-            await loadProjectConfig(await join(await projectConfigDir(), entry.name))
+            await loadProjectConfig(await join(projectConfigDirPath, entry.name))
         )
     )).filter(project => project !== null);
+}
+
+export async function updateProject(project: MediaEditorProject, oldName: string) {
+    const oldProjectDirPath = await join(projectConfigDirPath, oldName)
+    if (!await exists(oldProjectDirPath)) {
+        throw new Error("the old project config path is not exsits")
+    }
+
+    const newProjectDirPath = await join(projectConfigDirPath, project.metadata.name);
+    if (await exists(newProjectDirPath)) {
+        throw new Error("the new project config path is already exists")
+    }
+
+    await rename(oldProjectDirPath, newProjectDirPath)
+    await persistProjectConfig(project, newProjectDirPath)
 }

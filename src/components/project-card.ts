@@ -4,9 +4,9 @@ import { customElement, property, state } from "lit/decorators.js";
 import { MediaEditorProject } from "../types/project-config";
 import { calculateFolderSize, formatTime, formatToReadableSize } from "../utils/common";
 import { join } from "@tauri-apps/api/path";
-import { projectConfigDir } from "../utils/path";
 import "../components/seperation-line";
 import "../components/global-mask";
+import { projectConfigDirPath } from "../utils/path";
 
 @customElement('project-card')
 export class ProjectCard extends LitElement {
@@ -80,12 +80,18 @@ export class ProjectCard extends LitElement {
 
     private _showSubMenu(event: MouseEvent) {
         const menuElement = this.shadowRoot?.querySelector(".menu");
+        const nameElement = this.shadowRoot?.querySelector(".name")
         if (!menuElement) {
             throw new Error('can not find menu in project card')
         }
 
+        if (!nameElement) {
+            throw new Error('can not find name in project card')
+        }
+
         this.dispatchEvent(new CustomEvent("show-submenu", {
             detail: {
+                nameElement,
                 menuElement,
                 project: this.project
             },
@@ -98,7 +104,7 @@ export class ProjectCard extends LitElement {
 
     protected async firstUpdated() {
         if (this.project) {
-            const projectFolderPath = await join(await projectConfigDir(), this.project.metadata.name);
+            const projectFolderPath = await join(projectConfigDirPath, this.project.metadata.name);
             this.size = formatToReadableSize(await calculateFolderSize(projectFolderPath));
         }
     }
