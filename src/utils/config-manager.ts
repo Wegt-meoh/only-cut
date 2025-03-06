@@ -63,22 +63,22 @@ async function createUniqueProjectDir(name: string) {
 
 export async function copyProject(project: MediaEditorProject) {
     const projectPath = await createUniqueProjectDir(`${project.name}-${copyText()}`)
+    const newProjectName = await basename(projectPath)
     const now = new Date().toLocaleString();
-    const newMetadata = {
+    const newMetadata: MediaEditorConfig['metadata'] = {
         ...project.config.metadata,
-        name: await basename(projectPath),
         last_modified: now,
         created_at: now,
         version: await getVersion(),
     }
 
-    await persistProjectConfig({ name: project.name, config: { ...project.config, metadata: newMetadata } })
+    await persistProjectConfig({ name: newProjectName, config: { ...project.config, metadata: newMetadata } })
 
     const config = await loadProjectConfig(projectPath)
     if (!config) {
         throw new Error("can not load copyed project")
     }
-    return { name: await basename(projectPath), config }
+    return { name: newProjectName, config }
 }
 
 export async function createNewProject() {
