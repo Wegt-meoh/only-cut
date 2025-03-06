@@ -83,12 +83,17 @@ export class StartUp extends LitElement {
         }
 
         input{
+            font-family: "Times New Roman";
+            color: var(--light-grey-color);
             position: fixed;
-            top: 0;
-            left: 0;
-            opacity: 0;
+            top: -100px;
+            left: 0;            
             border: none;
-            outline: none;            
+            outline: none;
+            font-size: 16px;
+            padding: 0;
+            line-height: 20px;
+            background: var(--dark-bg-color);
         }
     `
 
@@ -254,7 +259,6 @@ export class StartUp extends LitElement {
             return;
         }
 
-        console.log(this.focusedProject)
         await renameProject(this.focusedProject.name, newName);
         this.projectList = [...this.projectList.filter(item => item !== this.focusedProject), { ...this.focusedProject, name: newName }]
     }
@@ -281,7 +285,7 @@ export class StartUp extends LitElement {
                 <div @click=${this._copy}>copy</div>
                 <div @click=${this._delete}>delete</div>
             </div>  
-            <input type="text" @blur=${this._handleInputBlur} class=${this.renaming ? "visible" : ""} style=${this.inputStyle}>
+            <input type="text" @blur=${this._handleInputBlur} style=${this.renaming ? this.inputStyle : ""}>
         `
     }
 }
