@@ -90,7 +90,7 @@ export class StartUp extends LitElement {
             left: 0;            
             border: none;
             outline: none;
-            font-size: 16px;
+            font-size: 14px;
             padding: 0;
             line-height: 20px;
             background: var(--dark-bg-color);
@@ -240,34 +240,29 @@ export class StartUp extends LitElement {
     }
 
     private async _handleInputBlur() {
-        this.renaming = false
+        if (!this.focusedProject) {
+            throw new Error("menu project config is undefined")
+        }
 
         if (!this.inputElemnt) {
             throw new Error("input element is undefined")
         }
 
         const newName = this.inputElemnt.value
-        if (newName.length <= 0) {
-            return;
-        }
-
-        if (!this.focusedProject) {
-            throw new Error("menu project config is undefined")
-        }
-
-        if (!this.projectList.every(p => p.name !== newName)) {
+        if (newName.length <= 0 || newName === this.focusedProject.name || !this.projectList.every(p => p.name !== newName)) {
+            this.renaming = false
             return;
         }
 
         await renameProject(this.focusedProject.name, newName);
         this.projectList = [...this.projectList.filter(item => item !== this.focusedProject), { ...this.focusedProject, name: newName }]
+        this.renaming = false
     }
 
     render() {
         const sortedList = this.projectList.sort((a, b) => {
             return Date.parse(b.config.metadata.last_modified) - Date.parse(a.config.metadata.last_modified);
         }).map(project => {
-            console.log(Date.parse(project.config.metadata.last_modified))
             return html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`
         })
 

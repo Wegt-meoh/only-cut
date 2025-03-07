@@ -80,3 +80,48 @@ export function formatTime(time: number) {
 
     return `${addPrefixZero(hour)}:${addPrefixZero(minute)}:${addPrefixZero(second)}`
 }
+
+export function ellipsisMiddleText(text: string, fontSize: string, maxWidth: number) {
+    const textLength = text.length;
+
+    if (text.length < 3) return text;
+
+    let truncatedText = text;
+
+    // create a template element for calc text width
+    const tempElement = document.createElement('span');
+    tempElement.style.visibility = 'hidden';
+    tempElement.style.whiteSpace = 'nowrap';
+    tempElement.style.position = 'absolute';
+    tempElement.style.fontSize = fontSize;
+    tempElement.textContent = text;
+    document.body.appendChild(tempElement);
+
+    // get text width
+    const textWidth = tempElement.offsetWidth;
+
+    // if the text width too long, exclude middle part
+    if (textWidth > maxWidth) {
+        let middle = Math.floor(textLength / 2);
+        let start = middle - 1;
+        let end = middle + 1;
+
+        // 找到合适的截取位置
+        while (start >= 0 && end < textLength) {
+            const newText = text.slice(0, start) + '…' + text.slice(end);
+            tempElement.textContent = newText;
+
+            if (tempElement.offsetWidth <= maxWidth) {
+                truncatedText = newText;
+                break;
+            }
+
+            start--;
+            end++;
+        }
+    }
+
+    // 移除临时元素
+    document.body.removeChild(tempElement);
+    return truncatedText
+}
