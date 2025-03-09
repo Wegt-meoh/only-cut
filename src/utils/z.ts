@@ -118,7 +118,7 @@ class UnionSchema<U extends Schema<unknown>, T extends [U, U, ...U[]]> extends S
     }
 }
 
-class EnumSchema<U extends string | number, T extends [U, ...U[]]> extends Schema<{ [K in keyof T]: T[K] }[number]> {
+class EnumSchema<U extends string | number, T extends [U, ...U[]]> extends Schema<T[number]> {
     constructor(private values: T) {
         super(
             `enum(${values.join("|")})`,
@@ -126,51 +126,64 @@ class EnumSchema<U extends string | number, T extends [U, ...U[]]> extends Schem
                 if (!this.values.includes(data as U)) {
                     throw new Error(`Expected ${this.typeName}`);
                 }
-                return data as { [K in keyof T]: T[K] }[number];
+                return data as T[number];
             }
         )
     }
 }
 
+class LazySchema<T> extends Schema<T> {
+    private schema: Schema<T> | null = null;
+
+    constructor(private lazyFn: () => Schema<T>) {
+        super(
+            "lazy",
+            (data: unknown) => {
+                if (!this.schema) {
+                    this.schema = this.lazyFn(); // 延迟初始化 schema
+                }
+                return this.schema.parse(data); // 使用延迟加载的 schema 解析数据
+            }
+        );
+    }
+}
+
 export type TypeOf<T> = T extends Schema<infer U> ? U : never;
 export type { TypeOf as infer };
+export type SchemaType<T> = Schema<T>;
 
-// 工具函数：创建 string 模式
 export const string = () => {
     return new StringSchema();
 }
 
-// 工具函数：创建 number 模式
 export const number = () => {
     return new NumberSchema();
 }
 
-// 工具函数：创建 boolean 模式
 export const boolean = () => {
     return new BooleanSchema();
 }
 
-// 工具函数：创建 null 模式
 export const nullObj = () => {
     return new NullSchema();
 }
 
-// 工具函数：创建 object 模式
 export const object = <T extends Record<string, Schema<unknown>>>(shape: T) => {
     return new ObjectSchema(shape);
 }
 
-// 工具函数：创建 array 模式
 export const array = <T>(shape: Schema<T>) => {
     return new ArraySchema(shape)
 }
 
-// 工具函数：创建 union 模式
 export const union = <U extends Schema<unknown>, T extends [U, U, ...U[]]>(unionSchema: T) => {
     return new UnionSchema(unionSchema);
 }
 
-// 工具函数：创建 enum 模式
 export const enumSchema = <U extends string | number, T extends [U, ...U[]]>(values: T) => {
     return new EnumSchema(values);
+}
+
+export const lazy = <T extends Schema<any>>(lazyFn: () => T) => {
+    return new LazySchema(lazyFn)
 }

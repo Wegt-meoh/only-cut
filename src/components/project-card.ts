@@ -73,7 +73,7 @@ export class ProjectCard extends LitElement {
 
     private _openProject() {
         if (this.project) {
-            todo()
+            window.location.href = `/main-work?name=${this.project.name}`
         }
     }
 

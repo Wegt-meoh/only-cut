@@ -21,6 +21,16 @@ const assetSchema = z.object({
     metadata: assetMetadataSchema
 })
 
+type DirSchema = {
+    name: string,
+    children: Array<z.infer<typeof assetSchema> | DirSchema>
+}
+
+const dirSchema: z.SchemaType<DirSchema> = z.lazy(() => z.object({
+    name: z.string(),
+    children: z.array(z.union([assetSchema, dirSchema]))
+}));
+
 const trackSchema = z.object({
     id: z.string(),
     type: z.enumSchema(["video", "audio", "image"]),
@@ -34,7 +44,7 @@ export const MediaEditorSchema = z.object({
         last_modified: z.string(),
         cover_path: z.union([z.string(), z.nullObj()])
     }),
-    assets: z.array(assetSchema),
+    assets: z.array(z.union([dirSchema, assetSchema])),
     timeline: z.object({
         tracks: z.array(trackSchema)
     }),
