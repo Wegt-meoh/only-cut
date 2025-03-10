@@ -164,7 +164,7 @@ export const boolean = () => {
     return new BooleanSchema();
 }
 
-export const nullObj = () => {
+const nullObj = () => {
     return new NullSchema();
 }
 
@@ -180,10 +180,12 @@ export const union = <U extends Schema<unknown>, T extends [U, U, ...U[]]>(union
     return new UnionSchema(unionSchema);
 }
 
-export const enumSchema = <U extends string | number, T extends [U, ...U[]]>(values: T) => {
+const enumSchema = <U extends string | number, T extends [U, ...U[]]>(values: T) => {
     return new EnumSchema(values);
 }
 
 export const lazy = <T extends Schema<any>>(lazyFn: () => T) => {
     return new LazySchema(lazyFn)
 }
+
+export { enumSchema as enum, nullObj as null }
