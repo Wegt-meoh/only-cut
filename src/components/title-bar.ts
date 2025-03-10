@@ -1,6 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getCurrentWindow, LogicalPosition, LogicalSize, PhysicalSize } from '@tauri-apps/api/window';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { UnlistenFn } from '@tauri-apps/api/event';
 
 @customElement('title-bar')
@@ -79,15 +79,13 @@ export class Titlebar extends LitElement {
         this.currentWindow.close();
     }
 
-    private _toggleMaximize() {
-        if (this.isFullScreen) {
-            this.currentWindow.unmaximize().catch((error) => {
-                console.error('Failed to unmaximize window:', error);
-            });
+    private async _toggleMaximizeAndFullscreen() {
+        if (await this.currentWindow.isFullscreen()) {
+            await this.currentWindow.setFullscreen(false)
+        } else if (await this.currentWindow.isMaximized()) {
+            await this.currentWindow.unmaximize()
         } else {
-            this.currentWindow.maximize().catch((error) => {
-                console.error('Failed to maximize window:', error);
-            });
+            await this.currentWindow.maximize()
         }
     }
 
@@ -108,7 +106,7 @@ export class Titlebar extends LitElement {
         }
 
         this.readyToDragging = false;
-        this._toggleMaximize();
+        this._toggleMaximizeAndFullscreen();
     }
 
     render() {
@@ -123,7 +121,7 @@ export class Titlebar extends LitElement {
                 <div class="titlebar-button" @click="${this._windowMinimize}">            
                     ${minimizeSvgTemplate}
                 </div>
-                <div class="titlebar-button"  @click="${this._toggleMaximize}">                
+                <div class="titlebar-button"  @click="${this._toggleMaximizeAndFullscreen}">                
                     ${this.isFullScreen ? restoreSvgTemplate : maximizeSvgTemplate}
                 </div>                
                 <div class="titlebar-button" @click="${this._windowClose}">
