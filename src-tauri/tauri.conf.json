@@ -15,7 +15,10 @@
                 "title": "Only Cut",
                 "decorations": false,
                 "minWidth": 843,
-                "minHeight": 640
+                "minHeight": 640,
+                "resizable": true,
+                "visible": true,
+                "fullscreen": false
             }
         ],
         "security": {

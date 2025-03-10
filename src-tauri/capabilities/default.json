@@ -26,6 +26,7 @@
         "fs:allow-unwatch",
         "core:window:allow-maximize",
         "core:window:allow-unmaximize",
-        "core:window:allow-set-cursor-position"
+        "core:window:allow-set-cursor-position",
+        "core:window:allow-set-fullscreen"
     ]
 }
