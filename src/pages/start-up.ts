@@ -5,6 +5,8 @@ import "../components/title-bar.ts"
 import "../components/create-project-card.ts"
 import { copyProject, deleteProject, listAllProjects, renameProject } from "../utils/config-manager.ts";
 import { MediaEditorProject } from "../types/project-config.ts";
+import { classMap } from "lit/directives/class-map.js";
+import { styleMap } from "lit/directives/style-map.js";
 
 
 @customElement('start-up')
@@ -36,13 +38,13 @@ export class StartUp extends LitElement {
         }       
         
         main::-webkit-scrollbar{
-            width: 8px;            
+            width: 4px;
         }
 
         main::-webkit-scrollbar-thumb {
-            background-color: #888;
+            background-color: var(--scrollbar-thumb-color, transparent);
             border-radius: 4px;
-            transition: backgournd-color 0.3s;
+            transition: background-color 0.3s;
         }
 
         main::-webkit-scrollbar-track {
@@ -98,7 +100,7 @@ export class StartUp extends LitElement {
     `
 
     @state() private projectList: MediaEditorProject[] = [];
-    @state() private scrollbarStyle = ""; // used for scrollbar style
+    @state() private isNotScroll = true; // used for scrollbar style
     @state() private isSubMenuVisible: boolean = false;
     @state() private subMenuStyle = "";
     @state() private inputStyle = "";
@@ -131,10 +133,10 @@ export class StartUp extends LitElement {
             clearTimeout(this.scrollTimer);
         }
 
-        this.scrollbarStyle = `scrollbar-color: #888 transparent;`
+        this.isNotScroll = false;
 
         this.scrollTimer = setTimeout(() => {
-            this.scrollbarStyle = "";
+            this.isNotScroll = true;
         }, 500)
 
         if (this.renaming) {
@@ -266,16 +268,21 @@ export class StartUp extends LitElement {
             return html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`
         })
 
+        const submenuClass = classMap({
+            "sub-menu": true,
+            "visible": this.isSubMenuVisible
+        })
+
         return html`
             <title-bar></title-bar>
-            <main style=${this.scrollbarStyle} @scroll=${this._handleScroll}>
+            <main style=${styleMap({ "--scrollbar-thumb-color": this.isNotScroll ? null : "#888" })} @scroll=${this._handleScroll}>
                 <div class="project-container">
                     <create-project-card @newProject=${this._new}></create-project-card>
                     ${sortedList}
                 </div>
             </main>            
             <global-mask .visible=${this.isSubMenuVisible} @mask-closed=${this._closeMask}></global-mask>         
-            <div class=${"sub-menu" + (this.isSubMenuVisible === true ? " visible" : "")} style=${this.subMenuStyle}>
+            <div class=${submenuClass} style=${this.subMenuStyle}>
                 <div @click=${this._rename}>rename</div>
                 <div @click=${this._copy}>copy</div>
                 <div @click=${this._delete}>delete</div>
