@@ -1,11 +1,11 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { MediaEditorProject } from "../types/project-config";
-import { calculateFolderSize, formatTime, formatToReadableSize, todo, ellipsisMiddleText } from "../utils/common";
+import { calculateFolderSize, formatTime, formatToReadableSize, ellipsisMiddleText } from "../utils/common";
 import { join } from "@tauri-apps/api/path";
 import "../components/seperation-line";
 import "../components/global-mask";
-import { appProjectConfigDirPath } from "../utils/path";
+import { projectsConfigDir } from "../utils/path";
 
 @customElement('project-card')
 export class ProjectCard extends LitElement {
@@ -107,7 +107,7 @@ export class ProjectCard extends LitElement {
 
     protected async firstUpdated() {
         if (this.project) {
-            const projectFolderPath = await join(appProjectConfigDirPath, this.project.name);
+            const projectFolderPath = await join(await projectsConfigDir(), this.project.name);
             this.size = formatToReadableSize(await calculateFolderSize(projectFolderPath));
         }
     }

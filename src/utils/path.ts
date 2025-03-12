@@ -19,7 +19,7 @@ export async function getUniquePath(targetDirPath: string, name: string) {
     return currentPath
 }
 
-async function projectsConfigDir() {
+export async function projectsConfigDir() {
     const result = await join(await userDataDir(), "projects")
 
     if (! await exists(result)) {
@@ -38,10 +38,6 @@ async function userDataDir() {
 
     return result;
 }
-
-export const appProjectConfigDirPath = await projectsConfigDir();
-
-export const appUserDataDirPath = await userDataDir();
 
 export const configFileName = 'project-config.json';
 export const keyFileName = 'key';

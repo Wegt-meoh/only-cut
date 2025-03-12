@@ -1,5 +1,4 @@
 import page from 'page';
-import "./pages/start-up.ts"
 
 /**
  * app router

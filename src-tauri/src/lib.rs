@@ -1,3 +1,5 @@
+use tauri::Manager;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod cmds;
 mod errs;
@@ -14,6 +16,11 @@ pub fn run() {
             cmds::ffprobe,
             cmds::move_to_trash
         ])
+        .setup(|app| {
+            let window = app.get_webview_window("main").unwrap();
+            window.set_decorations(false).unwrap();
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

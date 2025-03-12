@@ -2,7 +2,7 @@ import { basename, join } from "@tauri-apps/api/path";
 import { MediaEditorSchema } from "../schemas/project-config";
 import { exists, mkdir, readDir, readTextFile, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { getVersion } from "@tauri-apps/api/app";
-import { configFileName, getUniquePath, keyFileName, appProjectConfigDirPath } from "./path";
+import { configFileName, getUniquePath, keyFileName, projectsConfigDir } from "./path";
 import { copyText, getCurrentDate } from "./common";
 import { MediaEditorConfig, MediaEditorProject } from "../types/project-config";
 import { invoke } from "@tauri-apps/api/core";
@@ -10,7 +10,7 @@ import { generateKey, obfuscateData, deobfuscateData } from "./cypher";
 
 export async function persistProjectConfig(project: MediaEditorProject) {
     const { config, name } = project
-    const projectDirPath = await join(appProjectConfigDirPath, name)
+    const projectDirPath = await join(await projectsConfigDir(), name)
     const key = generateKey(16);
     const obfuscatedConfig = obfuscateData(config, key);
 
@@ -56,7 +56,7 @@ export async function genertateEditorConfig() {
 }
 
 async function createUniqueProjectDir(name: string) {
-    const uniquePath = await getUniquePath(appProjectConfigDirPath, name);
+    const uniquePath = await getUniquePath(await projectsConfigDir(), name);
     await mkdir(uniquePath, { recursive: true });
     return uniquePath
 }
@@ -94,7 +94,7 @@ export async function createNewProject() {
 }
 
 export async function deleteProject(name: string) {
-    const projectPath = await join(appProjectConfigDirPath, name)
+    const projectPath = await join(await projectsConfigDir(), name)
     if (!await exists(projectPath)) {
         return;
     }
@@ -107,12 +107,12 @@ export async function deleteProject(name: string) {
 }
 
 export async function listAllProjects() {
-    const entryList = await readDir(appProjectConfigDirPath);
+    const entryList = await readDir(await projectsConfigDir());
     const dirEntryList = entryList.filter(entry => entry.isDirectory)
     const projectResultList = await Promise.all(
         dirEntryList.map(async (entry) => ({
             name: entry.name,
-            config: await loadProjectConfig(await join(appProjectConfigDirPath, entry.name))
+            config: await loadProjectConfig(await join(await projectsConfigDir(), entry.name))
         }))
     )
     return projectResultList.filter((project): project is { name: string, config: MediaEditorConfig } => project.config !== null)
@@ -123,13 +123,13 @@ export async function updateProject(project: MediaEditorProject) {
 }
 
 export async function renameProject(oldName: string, newName: string) {
-    const oldProjectDirPath = await join(appProjectConfigDirPath, oldName)
+    const oldProjectDirPath = await join(await projectsConfigDir(), oldName)
 
     if (!await exists(oldProjectDirPath)) {
         throw new Error("the old project config path is not exsits")
     }
 
-    const newProjectDirPath = await join(appProjectConfigDirPath, newName)
+    const newProjectDirPath = await join(await projectsConfigDir(), newName)
 
     if (await exists(newProjectDirPath)) {
         throw new Error("the new project config path is already exists")

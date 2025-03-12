@@ -13,6 +13,7 @@
         "windows": [
             {
                 "title": "Only Cut",
+                "label": "main",
                 "decorations": false,
                 "minWidth": 843,
                 "minHeight": 640,
