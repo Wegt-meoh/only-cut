@@ -10,18 +10,6 @@
         "frontendDist": "../dist"
     },
     "app": {
-        "windows": [
-            {
-                "title": "Only Cut",
-                "label": "main",
-                "decorations": false,
-                "minWidth": 843,
-                "minHeight": 640,
-                "resizable": true,
-                "visible": true,
-                "fullscreen": false
-            }
-        ],
         "security": {
             "csp": null
         }

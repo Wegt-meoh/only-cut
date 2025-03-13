@@ -1,13 +1,18 @@
-use tauri::Manager;
-
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod cmds;
 mod errs;
+mod start_up;
+
+use start_up::start_up;
+use tauri_plugin_window_state::StateFlags;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_window_state::Builder::new().build())
+        .plugin(
+            tauri_plugin_window_state::Builder::new()
+                .with_state_flags(StateFlags::SIZE | StateFlags::POSITION)
+                .build(),
+        )
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
@@ -17,8 +22,7 @@ pub fn run() {
             cmds::move_to_trash
         ])
         .setup(|app| {
-            let window = app.get_webview_window("main").unwrap();
-            window.set_decorations(false).unwrap();
+            start_up(app);
             Ok(())
         })
         .run(tauri::generate_context!())
