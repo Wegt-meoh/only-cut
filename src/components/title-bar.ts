@@ -48,21 +48,14 @@ export class Titlebar extends LitElement {
     }
   `;
 
-    @state() private isFullScreen: boolean = false;
+    @state() private isMaximize: boolean = false;
     private readyToDragging: boolean = false;
     private isDragging: boolean = false;
     private resizeUnListenerFn: UnlistenFn | null = null;
     private currentWindow = getCurrentWindow();
 
     async firstUpdated() {
-        try {
-            this.resizeUnListenerFn = await this.currentWindow.onResized(async () => {
-                const value = await this.currentWindow.isMaximized();
-                this.isFullScreen = value;
-            })
-        } catch (error) {
-            console.error('first update error: ', error);
-        }
+        this.isMaximize = await this.currentWindow.isMaximized();
     }
 
     disconnectedCallback() {
@@ -82,10 +75,13 @@ export class Titlebar extends LitElement {
     private async _toggleMaximizeAndFullscreen() {
         if (await this.currentWindow.isFullscreen()) {
             await this.currentWindow.setFullscreen(false)
+            this.isMaximize = false
         } else if (await this.currentWindow.isMaximized()) {
             await this.currentWindow.unmaximize()
+            this.isMaximize = false
         } else {
             await this.currentWindow.maximize()
+            this.isMaximize = true
         }
     }
 
@@ -122,7 +118,7 @@ export class Titlebar extends LitElement {
                     ${minimizeSvgTemplate}
                 </div>
                 <div class="titlebar-button"  @click="${this._toggleMaximizeAndFullscreen}">                
-                    ${this.isFullScreen ? restoreSvgTemplate : maximizeSvgTemplate}
+                    ${this.isMaximize ? restoreSvgTemplate : maximizeSvgTemplate}
                 </div>                
                 <div class="titlebar-button" @click="${this._windowClose}">
                     ${closeSvgTemplate}
