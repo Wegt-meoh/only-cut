@@ -125,3 +125,13 @@ export function ellipsisMiddleText(text: string, fontSize: string, maxWidth: num
     document.body.removeChild(tempElement);
     return truncatedText
 }
+
+export function getOS() {
+    const ua = navigator.userAgent;
+    if (ua.includes("Win")) return "Windows";
+    if (ua.includes("Mac")) return "macOS";
+    if (ua.includes("Linux")) return "Linux";
+    if (ua.includes("Android")) return "Android";
+    if (ua.includes("like Mac")) return "iOS"; // iPhones & iPads
+    return "Unknown";
+}

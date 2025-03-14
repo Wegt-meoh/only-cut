@@ -1,28 +1,28 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getCurrentWindow } from '@tauri-apps/api/window';
+import { getCurrentWindow, LogicalPosition } from '@tauri-apps/api/window';
 import { UnlistenFn } from '@tauri-apps/api/event';
+import { getOS } from '../utils/common';
 
 @customElement('title-bar')
 export class Titlebar extends LitElement {
-    // Define scoped styles right with your component, in plain CSS
     static styles = css`
-    .titlebar {                
+    :host {                
         height: 30px;
         background: var(--dark-bg-color);
         user-select: none;
         display: flex;
-        justify-content: space-between
+        justify-content: space-between;
+        -webkit-user-select: none;  /* Safari & older Chrome */
+        -moz-user-select: none;     /* Firefox */
+        -ms-user-select: none;      /* Internet Explorer/Edge */
+        user-select: none;
+        cursor: default;
     }
 
     .titlebar-button {        
         width: 30px;
-        height: 30px;
-        user-select: none;
-        display:flex;
-        justify-content: center;
-        align-items: center;
-        -webkit-user-select: none;
+        display: inline-block;
     }
 
     .titlebar-button>svg{
@@ -31,10 +31,6 @@ export class Titlebar extends LitElement {
 
     .titlebar-button:hover {
         background: var(--active-grey-color);
-    }
-
-    .button-group{
-        display: flex;
     }
 
     #drag-area{        
@@ -101,13 +97,17 @@ export class Titlebar extends LitElement {
             return;
         }
 
-        this.readyToDragging = false;
         this._toggleMaximizeAndFullscreen();
     }
 
     render() {
-        return html` 
-        <div class="titlebar">
+        const os = getOS();
+        if (os === "macOS") {
+            return html`
+            <div id='drag-area' @mousemove="${this._handleMouseMove}"  @mousedown="${this._handleMouseDown}"></div>
+            `
+        }
+        return html`
             <div class="logo">                
                 ${logoSvgTemplate}
                 <span>Only Cut</span>
@@ -124,7 +124,6 @@ export class Titlebar extends LitElement {
                     ${closeSvgTemplate}
                 </div>
             </div>
-        </div>
     `;
     }
 }
