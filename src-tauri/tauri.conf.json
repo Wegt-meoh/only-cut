@@ -1,6 +1,6 @@
 {
     "$schema": "https://schema.tauri.app/config/2",
-    "productName": "hello-tauri",
+    "productName": "Only Cut",
     "version": "0.1.0",
     "identifier": "github.wegt-meoh.only-cut",
     "build": {
