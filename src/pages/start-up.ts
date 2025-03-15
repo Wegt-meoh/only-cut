@@ -7,6 +7,7 @@ import { copyProject, deleteProject, listAllProjects, renameProject } from "../u
 import { MediaEditorProject } from "../types/project-config.ts";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
+import { throttle } from "../utils/common.ts";
 
 
 @customElement('start-up')
@@ -111,9 +112,7 @@ export class StartUp extends LitElement {
     private subMenuElement?: HTMLDivElement;
     private focusedProject?: MediaEditorProject;
     private inputElemnt?: HTMLInputElement;
-    private resizeListener = () => {
-        this._handleResize()
-    }
+    private abortController = new AbortController()
 
     async firstUpdated() {
         this.projectList = await listAllProjects();
@@ -121,14 +120,14 @@ export class StartUp extends LitElement {
         this.inputElemnt = this.shadowRoot?.querySelector("input") ?? undefined
         this.subMenuElement = this.shadowRoot?.querySelector('.sub-menu') ?? undefined;
 
-        window.addEventListener("resize", this.resizeListener)
+        window.addEventListener("resize", throttle(this._handleResize, 1000 / 60), { signal: this.abortController.signal })
     }
 
     disconnectedCallback(): void {
-        window.removeEventListener("resize", this.resizeListener)
+        this.abortController.abort()
     }
 
-    private _handleScroll() {
+    private _handleScroll = throttle(() => {
         if (this.scrollTimer) {
             clearTimeout(this.scrollTimer);
         }
@@ -142,7 +141,7 @@ export class StartUp extends LitElement {
         if (this.renaming) {
             this.inputStyle = this._calcInputStyle()
         }
-    }
+    }, 1000 / 60)
 
     private _closeMask() {
         this.isSubMenuVisible = false;
@@ -158,7 +157,7 @@ export class StartUp extends LitElement {
         this.isSubMenuVisible = true;
     }
 
-    private _handleResize() {
+    private _handleResize = () => {
         if (this.isSubMenuVisible) {
             this.subMenuStyle = this._calcSubMenuStyle();
         }

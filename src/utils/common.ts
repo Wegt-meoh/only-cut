@@ -135,3 +135,26 @@ export function getOS() {
     if (ua.includes("like Mac")) return "iOS"; // iPhones & iPads
     return "Unknown";
 }
+
+export function throttle<T extends (...args: any[]) => void>(func: T, limit: number) {
+    let lastCall = 0;
+    return function (...args: Parameters<T>) {
+        const now = Date.now();
+        if (now - lastCall >= limit) {
+            lastCall = now;
+            func(...args)
+        }
+    };
+}
+
+export function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    return function (...args: Parameters<T>) {
+        if (timer) {
+            clearTimeout(timer)
+        }
+        timer = setTimeout(() => {
+            func(...args)
+        }, delay);
+    };
+}

@@ -1,7 +1,7 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { getCurrentWindow, LogicalPosition, PhysicalPosition, PhysicalSize } from '@tauri-apps/api/window';
-import { getOS } from '../utils/common';
+import { getOS, throttle } from '../utils/common';
 
 @customElement('title-bar')
 export class Titlebar extends LitElement {
@@ -54,16 +54,16 @@ export class Titlebar extends LitElement {
         x: 0,
         y: 0
     }
+    private abortController = new AbortController();
 
     async firstUpdated() {
         this.isMaximize = await this.currentWindow.isMaximized()
-        window.addEventListener("mouseup", this._handleMouseUp)
-        window.addEventListener("mousemove", this._handleMouseMove)
+        window.addEventListener("mouseup", this._handleMouseUp, { signal: this.abortController.signal })
+        window.addEventListener("mousemove", throttle(this._handleMouseMove, 1000 / 120), { signal: this.abortController.signal })
     }
 
     disconnectedCallback() {
-        window.removeEventListener("mouseup", this._handleMouseUp)
-        window.removeEventListener("mousemove", this._handleMouseMove)
+        this.abortController.abort()
     }
 
     private _windowMinimize = async () => {
@@ -98,18 +98,17 @@ export class Titlebar extends LitElement {
             const { screenX: sx } = ev;
             const outerPosition = await this.currentWindow.outerPosition()
 
-            console.log(sx, outerPosition)
             this.dragStartRatio = (sx - outerPosition.x / window.devicePixelRatio) / window.innerWidth;
             if (this.isMaximize) {
-                requestAnimationFrame(async () => {
-                    await this._toggleMaximizeAndFullscreen()
+                requestAnimationFrame(() => {
+                    this._toggleMaximizeAndFullscreen()
                 })
             }
         }
 
         const { screenX: sx, screenY: sy } = ev;
-        requestAnimationFrame(async () => {
-            await this.currentWindow.setPosition(new LogicalPosition(sx - window.innerWidth * this.dragStartRatio, sy - 15))
+        requestAnimationFrame(() => {
+            this.currentWindow.setPosition(new LogicalPosition(sx - window.innerWidth * this.dragStartRatio, sy - 15))
         })
 
     }
