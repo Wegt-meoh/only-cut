@@ -1,7 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getCurrentWindow, LogicalPosition } from '@tauri-apps/api/window';
-import { UnlistenFn } from '@tauri-apps/api/event';
+import { getCurrentWindow, LogicalPosition, PhysicalPosition, PhysicalSize } from '@tauri-apps/api/window';
 import { getOS } from '../utils/common';
 
 @customElement('title-bar')
@@ -47,21 +46,29 @@ export class Titlebar extends LitElement {
     @state() private isMaximize: boolean = false;
     private readyToDragging: boolean = false;
     private isDragging: boolean = false;
-    private resizeUnListenerFn: UnlistenFn | null = null;
     private currentWindow = getCurrentWindow();
+    private dragStartRatio = 0;
+    private prevWindowState = {
+        width: 0,
+        height: 0,
+        x: 0,
+        y: 0
+    }
 
     async firstUpdated() {
-        this.isMaximize = await this.currentWindow.isMaximized();
+        this.isMaximize = await this.currentWindow.isMaximized()
+        window.addEventListener("mouseup", this._handleMouseUp)
+        window.addEventListener("mousemove", this._handleMouseMove)
     }
 
     disconnectedCallback() {
-        if (this.resizeUnListenerFn) {
-            this.resizeUnListenerFn()
-        }
+        window.removeEventListener("mouseup", this._handleMouseUp)
+        window.removeEventListener("mousemove", this._handleMouseMove)
     }
 
     private _windowMinimize = async () => {
-        this.currentWindow.minimize();
+        await this.currentWindow.minimize()
+        this.isMaximize = false
     }
 
     private _windowClose = async () => {
@@ -73,24 +80,41 @@ export class Titlebar extends LitElement {
             await this.currentWindow.setFullscreen(false)
             this.isMaximize = false
         } else if (await this.currentWindow.isMaximized()) {
-            await this.currentWindow.unmaximize()
+            await this._unmaximize()
             this.isMaximize = false
         } else {
-            await this.currentWindow.maximize()
+            await this._maximize()
             this.isMaximize = true
         }
     }
 
-    private async _handleMouseMove() {
-        if (!this.readyToDragging || this.isDragging) {
+    private _handleMouseMove = async (ev: MouseEvent) => {
+        if (!this.readyToDragging) {
             return;
         }
 
-        this.isDragging = true;
-        await this.currentWindow.startDragging()
+        if (!this.isDragging) {
+            this.isDragging = true;
+            const { screenX: sx } = ev;
+            const outerPosition = await this.currentWindow.outerPosition()
+
+            console.log(sx, outerPosition)
+            this.dragStartRatio = (sx - outerPosition.x / window.devicePixelRatio) / window.innerWidth;
+            if (this.isMaximize) {
+                requestAnimationFrame(async () => {
+                    await this._toggleMaximizeAndFullscreen()
+                })
+            }
+        }
+
+        const { screenX: sx, screenY: sy } = ev;
+        requestAnimationFrame(async () => {
+            await this.currentWindow.setPosition(new LogicalPosition(sx - window.innerWidth * this.dragStartRatio, sy - 15))
+        })
+
     }
 
-    private _handleMouseDown(ev: MouseEvent) {
+    private _handleMouseDown = (ev: MouseEvent) => {
         if (ev.detail === 1) {
             this.readyToDragging = true;
             this.isDragging = false;
@@ -100,11 +124,34 @@ export class Titlebar extends LitElement {
         this._toggleMaximizeAndFullscreen();
     }
 
+    private _handleMouseUp = () => {
+        this.readyToDragging = false;
+        this.isDragging = false;
+    }
+
+    private _maximize = async () => {
+        const { width, height } = await this.currentWindow.outerSize()
+        const { x, y } = await this.currentWindow.outerPosition()
+        this.prevWindowState = {
+            width,
+            height,
+            x,
+            y
+        }
+        await this.currentWindow.setPosition(new LogicalPosition(0, 0))
+        await this.currentWindow.setSize(new PhysicalSize(window.screen.width * window.devicePixelRatio, window.screen.height * window.devicePixelRatio))
+    }
+
+    private _unmaximize = async () => {
+        await this.currentWindow.setSize(new PhysicalSize(this.prevWindowState.width, this.prevWindowState.height))
+        await this.currentWindow.setPosition(new PhysicalPosition(this.prevWindowState.x, this.prevWindowState.y))
+    }
+
     render() {
         const os = getOS();
         if (os === "macOS") {
             return html`
-            <div id='drag-area' @mousemove="${this._handleMouseMove}"  @mousedown="${this._handleMouseDown}"></div>
+            <div id='drag-area' @mousedown=${this._handleMouseDown}></div>
             `
         }
         return html`
