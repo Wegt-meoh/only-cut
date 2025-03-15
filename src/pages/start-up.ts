@@ -9,7 +9,6 @@ import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { throttle } from "../utils/common.ts";
 
-
 @customElement('start-up')
 export class StartUp extends LitElement {
     static styles = css`

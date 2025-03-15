@@ -16,6 +16,8 @@ export class Titlebar extends LitElement {
         -moz-user-select: none;     /* Firefox */
         -ms-user-select: none;      /* Internet Explorer/Edge */
         user-select: none;
+        border-bottom: 1px solid var(--grey-color);
+        z-index: 10;
         cursor: default;
     }
 
