@@ -5,13 +5,10 @@ const MIN_HEIGHT: f64 = 540.0;
 
 fn create_window(app: &App) {
     let app_handle = app.handle();
-    app_handle
-        .set_activation_policy(tauri::ActivationPolicy::Regular)
-        .unwrap();
 
     #[cfg(target_os = "windows")]
     let window = tauri::WebviewWindowBuilder::new(
-        &app_handle,
+        app_handle,
         "main".to_string(),
         tauri::WebviewUrl::App("index.html".into()),
     )
@@ -23,6 +20,11 @@ fn create_window(app: &App) {
     .transparent(true)
     .shadow(true)
     .build();
+
+    #[cfg(target_os = "macos")]
+    app_handle
+        .set_activation_policy(tauri::ActivationPolicy::Regular)
+        .unwrap();
 
     #[cfg(target_os = "macos")]
     let window = tauri::WebviewWindowBuilder::new(

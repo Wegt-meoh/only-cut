@@ -81,7 +81,7 @@ export class Titlebar extends LitElement {
         if (await this.currentWindow.isFullscreen()) {
             await this.currentWindow.setFullscreen(false)
             this.isMaximize = false
-        } else if (await this.currentWindow.isMaximized()) {
+        } else if (await this.isMaximize) {
             await this._unmaximize()
             this.isMaximize = false
         } else {
@@ -160,7 +160,7 @@ export class Titlebar extends LitElement {
                 ${logoSvgTemplate}
                 <span>Only Cut</span>
             </div>
-            <div id='drag-area' @mousemove="${this._handleMouseMove}"  @mousedown="${this._handleMouseDown}"></div>
+            <div id='drag-area' @mousedown="${this._handleMouseDown}"></div>
             <div class="button-group">
                 <div class="titlebar-button" @click="${this._windowMinimize}">            
                     ${minimizeSvgTemplate}
