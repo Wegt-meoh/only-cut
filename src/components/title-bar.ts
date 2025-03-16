@@ -1,6 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { getCurrentWindow, LogicalPosition, PhysicalPosition, PhysicalSize } from '@tauri-apps/api/window';
+import { currentMonitor, getCurrentWindow, LogicalPosition, PhysicalPosition, PhysicalSize, primaryMonitor } from '@tauri-apps/api/window';
 import { getOS, throttle } from '../utils/common';
 
 @customElement('title-bar')
@@ -81,7 +81,7 @@ export class Titlebar extends LitElement {
         if (await this.currentWindow.isFullscreen()) {
             await this.currentWindow.setFullscreen(false)
             this.isMaximize = false
-        } else if (await this.isMaximize) {
+        } else if (this.isMaximize) {
             await this._unmaximize()
             this.isMaximize = false
         } else {
@@ -97,32 +97,31 @@ export class Titlebar extends LitElement {
 
         if (!this.isDragging) {
             this.isDragging = true;
+
             const { screenX: sx } = ev;
             const outerPosition = await this.currentWindow.outerPosition()
-
             this.dragStartRatio = (sx - outerPosition.x / window.devicePixelRatio) / window.innerWidth;
+
             if (this.isMaximize) {
-                requestAnimationFrame(() => {
-                    this._toggleMaximizeAndFullscreen()
-                })
+                await this.currentWindow.setSize(new PhysicalSize(this.prevWindowState.width, this.prevWindowState.height))
+                this.isMaximize = !this.isMaximize
             }
         }
 
         const { screenX: sx, screenY: sy } = ev;
-        requestAnimationFrame(() => {
-            this.currentWindow.setPosition(new LogicalPosition(sx - window.innerWidth * this.dragStartRatio, sy - 15))
+        requestAnimationFrame(async () => {
+            await this.currentWindow.setPosition(new LogicalPosition(sx - window.innerWidth * this.dragStartRatio, sy - 15))
         })
-
     }
 
-    private _handleMouseDown = (ev: MouseEvent) => {
+    private _handleMouseDown = async (ev: MouseEvent) => {
         if (ev.detail === 1) {
             this.readyToDragging = true;
             this.isDragging = false;
             return;
         }
 
-        this._toggleMaximizeAndFullscreen();
+        await this._toggleMaximizeAndFullscreen();
     }
 
     private _handleMouseUp = () => {
@@ -131,7 +130,7 @@ export class Titlebar extends LitElement {
     }
 
     private _maximize = async () => {
-        const { width, height } = await this.currentWindow.outerSize()
+        const { width, height } = await this.currentWindow.innerSize()
         const { x, y } = await this.currentWindow.outerPosition()
         this.prevWindowState = {
             width,
@@ -139,8 +138,8 @@ export class Titlebar extends LitElement {
             x,
             y
         }
-        await this.currentWindow.setPosition(new LogicalPosition(0, 0))
-        await this.currentWindow.setSize(new PhysicalSize(window.screen.width * window.devicePixelRatio, window.screen.height * window.devicePixelRatio))
+
+        await this.currentWindow.maximize()
     }
 
     private _unmaximize = async () => {
@@ -151,9 +150,7 @@ export class Titlebar extends LitElement {
     render() {
         const os = getOS();
         if (os === "macOS") {
-            return html`
-            <div id='drag-area' @mousedown=${this._handleMouseDown}></div>
-            `
+            return html`<div id='drag-area' @mousedown=${this._handleMouseDown}></div>`
         }
         return html`
             <div class="logo">                
@@ -172,7 +169,7 @@ export class Titlebar extends LitElement {
                     ${closeSvgTemplate}
                 </div>
             </div>
-    `;
+        `
     }
 }
 

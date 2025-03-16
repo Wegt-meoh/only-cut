@@ -84,7 +84,7 @@ export class StartUp extends LitElement {
             background-color: var(--grey-color)
         }
 
-        input{
+        input{            
             font-family: "Times New Roman";
             color: var(--light-grey-color);
             position: fixed;
