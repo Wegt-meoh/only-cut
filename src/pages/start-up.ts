@@ -21,10 +21,7 @@ export class StartUp extends LitElement {
 
         main{
             overflow-x: hidden;
-            overflow-y: scroll;
-            scrollbar-width: thin;
-            scrollbar-color: transparent transparent;   
-            transition: scrollbar-color 0.3s;
+            overflow-y: scroll;            
         }
         
         .project-container{
@@ -34,22 +31,32 @@ export class StartUp extends LitElement {
             flex-wrap: wrap;
             gap: 28px;
             justify-content: start;
-            align-items: normal;            
-        }       
+            align-items: normal;
+        }     
         
-        main::-webkit-scrollbar{
-            width: 4px;
-        }
+        @supports (scrollbar-color: auto) {
+            .main{
+                scrollbar-width: thin;
+                scrollbar-color: transparent var(--scrollbar-thumb-color);   
+                transition: scrollbar-color 0.3s;
+            }
+        }  
 
-        main::-webkit-scrollbar-thumb {
-            background-color: var(--scrollbar-thumb-color, transparent);
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
+        @supports selector(::-webkit-scrollbar) {
+            main::-webkit-scrollbar{
+                width: 4px;
+            }
 
-        main::-webkit-scrollbar-track {
-            background-color: transparent;
-        }        
+            main::-webkit-scrollbar-thumb {
+                background-color: var(--scrollbar-thumb-color, transparent);
+                border-radius: 4px;
+                transition: background-color 0.3s;
+            }
+
+            main::-webkit-scrollbar-track {
+                background-color: transparent;
+            } 
+        }                 
 
         .sub-menu{
             padding: 8px;
