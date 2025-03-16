@@ -26,7 +26,7 @@ type DirSchema = {
     children: Array<z.infer<typeof assetSchema> | DirSchema>
 }
 
-const dirSchema: z.SchemaType<DirSchema> = z.lazy(() => z.object({
+const dirSchema: z.AnyShemaType<DirSchema> = z.lazy(() => z.object({
     name: z.string(),
     children: z.array(z.union([assetSchema, dirSchema]))
 }));
