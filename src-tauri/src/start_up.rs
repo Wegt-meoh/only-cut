@@ -23,7 +23,7 @@ fn create_window(app: &App) {
 
     #[cfg(target_os = "macos")]
     app_handle
-        .set_activation_policy(tauri::ActivationPolicy::Regular)
+        .set_activation_policy(tauri::ActivationPolicy::Accessory)
         .unwrap();
 
     #[cfg(target_os = "macos")]
@@ -52,15 +52,9 @@ fn create_window(app: &App) {
     .transparent(true)
     .build();
 
-    match window {
-        Ok(window) => {
-            let _ = window.show();
-            let _ = window.set_focus();
-        }
-        Err(e) => {
-            println!("Failed to create window: {:?}", e);
-        }
-    }
+    let window = window.unwrap();
+    let _ = window.show();
+    let _ = window.set_focus();
 }
 
 pub fn start_up(app: &App) {
