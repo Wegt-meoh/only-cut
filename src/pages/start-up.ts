@@ -15,9 +15,12 @@ export class StartUp extends LitElement {
         :host{
             height: 100%;
             overflow: hidden;
+            flex-direction: column;
+            display: flex;            
         }
 
         main{
+            flex: 1;
             overflow-x: hidden;
             overflow-y: scroll;            
         }
