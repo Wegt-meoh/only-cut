@@ -15,7 +15,7 @@ fn create_window(app: &App) {
     .title("Only Cut")
     .inner_size(MIN_WIDTH, MIN_HEIGHT)
     .min_inner_size(MIN_WIDTH, MIN_HEIGHT)
-    .decorations(true)
+    .decorations(false)
     .maximizable(true)
     .transparent(true)
     .shadow(true)
