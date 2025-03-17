@@ -1,6 +1,6 @@
 import { LitElement, css, html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import { currentMonitor, getCurrentWindow, LogicalPosition, PhysicalPosition, PhysicalSize, primaryMonitor } from '@tauri-apps/api/window';
+import { getCurrentWindow, LogicalPosition, PhysicalPosition, PhysicalSize } from '@tauri-apps/api/window';
 import { getOS, throttle } from '../utils/common';
 
 @customElement('title-bar')
@@ -98,10 +98,6 @@ export class Titlebar extends LitElement {
         if (!this.isDragging) {
             this.isDragging = true;
 
-            const { screenX: sx } = ev;
-            const outerPosition = await this.currentWindow.outerPosition()
-            this.dragStartRatio = (sx - outerPosition.x / window.devicePixelRatio) / window.innerWidth;
-
             if (this.isMaximize) {
                 await this.currentWindow.setSize(new PhysicalSize(this.prevWindowState.width, this.prevWindowState.height))
                 this.isMaximize = !this.isMaximize
@@ -115,7 +111,14 @@ export class Titlebar extends LitElement {
     }
 
     private _handleMouseDown = async (ev: MouseEvent) => {
+        if (ev.button !== 0) {
+            return;
+        }
+
         if (ev.detail === 1) {
+            const { screenX: sx } = ev;
+            const outerPosition = await this.currentWindow.outerPosition()
+            this.dragStartRatio = (sx - outerPosition.x / window.devicePixelRatio) / window.innerWidth;
             this.readyToDragging = true;
             this.isDragging = false;
             return;
