@@ -13,8 +13,6 @@ import { throttle } from "../utils/common.ts";
 export class StartUp extends LitElement {
     static styles = css`
         :host{
-            display: grid;
-            grid-template-rows: 30px  1fr;
             height: 100%;
             overflow: hidden;
         }
