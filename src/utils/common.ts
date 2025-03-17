@@ -138,11 +138,17 @@ export function getOS() {
 
 export function throttle<T extends (...args: any[]) => void>(func: T, limit: number) {
     let lastCall = 0;
+    let timer: ReturnType<typeof setTimeout> | null = null;
     return function (...args: Parameters<T>) {
         const now = Date.now();
+        if (timer) {
+            clearTimeout(timer)
+        }
         if (now - lastCall >= limit) {
             lastCall = now;
             func(...args)
+        } else {
+            timer = setTimeout(func, limit)
         }
     };
 }
