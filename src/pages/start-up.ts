@@ -280,7 +280,7 @@ export class StartUp extends LitElement {
         })
 
         return html`  
-        <title-bar></title-bar>          
+            <title-bar></title-bar>          
             <main style=${styleMap({ "--scrollbar-thumb-color": this.isNotScroll ? null : "#888" })} @scroll=${this._handleScroll}>
                 <div class="project-container">
                     <create-project-card @newProject=${this._new}></create-project-card>
