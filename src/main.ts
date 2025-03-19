@@ -17,7 +17,7 @@ function renderPage(tagName: string) {
         return;
     }
 
-    import(`./pages/${tagName}.ts`).then(() => {
+    import(`./pages/${tagName}/index.ts`).then(() => {
         loadedModules.add(tagName);
         container.innerHTML = `<${tagName}></${tagName}>`;
     }).catch(error => {

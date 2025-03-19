@@ -1,11 +1,11 @@
 import { css, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
-import { MediaEditorProject } from "../types/project-config";
-import { calculateFolderSize, formatTime, formatToReadableSize, ellipsisMiddleText } from "../utils/common";
+import { MediaEditorProject } from "../../../types/project-config";
+import { calculateFolderSize, formatTime, formatToReadableSize, ellipsisMiddleText } from "../../../utils/common";
 import { join } from "@tauri-apps/api/path";
-import "../components/seperation-line";
-import "../components/global-mask";
-import { projectsConfigDir } from "../utils/path";
+import "../../../components/seperation-line";
+import "../../../components/global-mask";
+import { projectsConfigDir } from "../../../utils/path";
 
 @customElement('project-card')
 export class ProjectCard extends LitElement {

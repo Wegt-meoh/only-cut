@@ -1,11 +1,11 @@
-import { html, LitElement, PropertyValues } from "lit";
+import { html, LitElement} from "lit";
 import { customElement } from "lit/decorators.js";
-import { MediaEditorProject } from "../types/project-config";
-import { loadProjectConfig } from "../utils/config-manager";
-import "../components/file-explorer"
-import "../components/clips-track"
-import "../components/control-board"
-import "../components/media-player"
+import { MediaEditorProject } from "../../types/project-config";
+import { loadProjectConfig } from "../../utils/config-manager";
+import "./components/file-explorer"
+import "./components/clips-track"
+import "./components/control-board"
+import "./components/media-player"
 
 @customElement('main-work')
 export class MainWork extends LitElement {

@@ -1,6 +1,6 @@
 import { LitElement, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
-import { createNewProject } from "../utils/config-manager";
+import { createNewProject } from "../../../utils/config-manager";
 
 @customElement('create-project-card')
 export class createProjectCard extends LitElement {

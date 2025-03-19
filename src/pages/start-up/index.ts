@@ -1,13 +1,13 @@
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import "../components/project-card.ts"
-import "../components/title-bar.ts"
-import "../components/create-project-card.ts"
-import { copyProject, deleteProject, listAllProjects, renameProject } from "../utils/config-manager.ts";
-import { MediaEditorProject } from "../types/project-config.ts";
+import "./components/project-card.ts"
+import "../../components/title-bar.ts"
+import "./components/create-project-card.ts"
+import { copyProject, deleteProject, listAllProjects, renameProject } from "../../utils/config-manager.ts";
+import { MediaEditorProject } from "../../types/project-config.ts";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
-import { throttle } from "../utils/common.ts";
+import { throttle } from "../../utils/common.ts";
 
 @customElement('start-up')
 export class StartUp extends LitElement {
