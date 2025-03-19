@@ -2,7 +2,7 @@ import { basename, join } from "@tauri-apps/api/path";
 import { MediaEditorSchema } from "../schemas/project-config";
 import { exists, mkdir, readDir, readTextFile, rename, writeTextFile } from "@tauri-apps/plugin-fs";
 import { getVersion } from "@tauri-apps/api/app";
-import { configFileName, getUniquePath, keyFileName, projectsConfigDir } from "./path";
+import { configFileName, getUniqueName, keyFileName, projectsConfigDir } from "./path";
 import { copyText, getCurrentDate } from "./common";
 import { MediaEditorConfig, MediaEditorProject } from "../types/project-config";
 import { invoke } from "@tauri-apps/api/core";
@@ -24,8 +24,9 @@ export async function persistProjectConfig(project: MediaEditorProject) {
     await writeTextFile(await join(projectDirPath, keyFileName), key);
 }
 
-export async function loadProjectConfig(projectDirPath: string) {
+export async function loadProjectConfig(name: string) {
     try {
+        const projectDirPath = await join(await projectsConfigDir(), name);
         const key = await readTextFile(await join(projectDirPath, keyFileName));
         const obfuscatedString = await readTextFile(await join(projectDirPath, configFileName));
         const projectConfig = deobfuscateData(obfuscatedString, key);
@@ -56,14 +57,15 @@ export async function genertateEditorConfig() {
 }
 
 async function createUniqueProjectDir(name: string) {
-    const uniquePath = await getUniquePath(await projectsConfigDir(), name);
+    const projectConfigDirPath = await projectsConfigDir()
+    const uniqueName = await getUniqueName(projectConfigDirPath, name);
+    const uniquePath = await join(projectConfigDirPath, uniqueName)
     await mkdir(uniquePath, { recursive: true });
-    return uniquePath
+    return uniqueName
 }
 
 export async function copyProject(project: MediaEditorProject) {
-    const projectPath = await createUniqueProjectDir(`${project.name}-${copyText()}`)
-    const newProjectName = await basename(projectPath)
+    const newProjectName = await createUniqueProjectDir(`${project.name}-${copyText()}`)
     const now = new Date().toLocaleString();
     const newMetadata: MediaEditorConfig['metadata'] = {
         ...project.config.metadata,
@@ -74,7 +76,7 @@ export async function copyProject(project: MediaEditorProject) {
 
     await persistProjectConfig({ name: newProjectName, config: { ...project.config, metadata: newMetadata } })
 
-    const config = await loadProjectConfig(projectPath)
+    const config = await loadProjectConfig(newProjectName)
     if (!config) {
         throw new Error("can not load copyed project")
     }
@@ -112,7 +114,7 @@ export async function listAllProjects() {
     const projectResultList = await Promise.all(
         dirEntryList.map(async (entry) => ({
             name: entry.name,
-            config: await loadProjectConfig(await join(await projectsConfigDir(), entry.name))
+            config: await loadProjectConfig(entry.name)
         }))
     )
     return projectResultList.filter((project): project is { name: string, config: MediaEditorConfig } => project.config !== null)

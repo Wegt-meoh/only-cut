@@ -1,20 +1,16 @@
 import { appLocalDataDir, join } from "@tauri-apps/api/path";
 import { exists, mkdir } from "@tauri-apps/plugin-fs";
 
-export async function getUniquePath(targetDirPath: string, name: string) {
-    let currentPath = await join(targetDirPath, name);
+export async function getUniqueName(targetDirPath: string, name: string) {
     if (await exists(await join(targetDirPath, name))) {
         let index = 1;
-        while (await exists(currentPath = await join(targetDirPath, `${name}(${index})`))) {
+        while (await exists(await join(targetDirPath, `${name}(${index})`))) {
             index += 1;
         }
+        return `${name}(${index})`
     }
 
-    if (!currentPath) {
-        throw new Error('unique path is undefine')
-    }
-
-    return currentPath
+    return name
 }
 
 export async function projectsConfigDir() {
