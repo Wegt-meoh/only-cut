@@ -53,6 +53,20 @@ fn create_window(app: &App) {
     .build();
 
     let window = window.unwrap();
+    let monitor = window.primary_monitor().unwrap().unwrap();
+    let monitor_position = monitor.position();
+    let window_size = window.outer_size().unwrap();
+    let monitor_size = monitor.size();
+
+    let center_x = monitor_position.x + (monitor_size.width - window_size.width) as i32 / 2;
+    let center_y = monitor_position.y + (monitor_size.height - window_size.height) as i32 / 2;
+
+    window
+        .set_position(tauri::Position::Physical(tauri::PhysicalPosition {
+            x: center_x,
+            y: center_y,
+        }))
+        .unwrap();
     let _ = window.show();
     let _ = window.set_focus();
 }

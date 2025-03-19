@@ -10,7 +10,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(
             tauri_plugin_window_state::Builder::new()
-                .with_state_flags(StateFlags::SIZE | StateFlags::POSITION)
+                .with_state_flags(StateFlags::SIZE)
                 .build(),
         )
         .plugin(tauri_plugin_fs::init())
