@@ -52,6 +52,7 @@ fn create_window(app: &App) {
     .transparent(true)
     .build();
 
+    // center the window positon
     let window = window.unwrap();
     let monitor = window.primary_monitor().unwrap().unwrap();
     let monitor_position = monitor.position();
