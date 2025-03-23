@@ -9,7 +9,7 @@ export class FileExplorer extends LitElement {
 
     render() {
         return html`
-        this is file explorer
+            <div></div>
         `
     }
 }

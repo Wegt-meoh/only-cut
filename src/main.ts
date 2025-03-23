@@ -1,4 +1,5 @@
 import page from 'page';
+import "./components/title-bar";
 
 /**
  * app router
