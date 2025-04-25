@@ -1,15 +1,15 @@
 import { css, html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import "./components/project-card.ts"
-import "../../components/title-bar.ts"
-import "./components/create-project-card.ts"
+import "./components/project-card.ts";
+import "../../components/title-bar.ts";
+import "./components/create-project-card.ts";
 import { copyProject, deleteProject, listAllProjects, renameProject } from "../../utils/config-manager.ts";
 import { MediaEditorProject } from "../../types/project-config.ts";
 import { classMap } from "lit/directives/class-map.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { throttle } from "../../utils/common.ts";
 
-@customElement('start-up')
+@customElement("start-up")
 export class StartUp extends LitElement {
     static styles = css`
         :host{
@@ -105,7 +105,7 @@ export class StartUp extends LitElement {
             line-height: 20px;
             background: var(--dark-bg-color);
         }
-    `
+    `;
 
     @state() private projectList: MediaEditorProject[] = [];
     @state() private isNotScroll = true; // used for scrollbar style
@@ -119,19 +119,19 @@ export class StartUp extends LitElement {
     private subMenuElement?: HTMLDivElement;
     private focusedProject?: MediaEditorProject;
     private inputElemnt?: HTMLInputElement;
-    private abortController = new AbortController()
+    private abortController = new AbortController();
 
     async firstUpdated() {
         this.projectList = await listAllProjects();
 
-        this.inputElemnt = this.shadowRoot?.querySelector("input") ?? undefined
-        this.subMenuElement = this.shadowRoot?.querySelector('.sub-menu') ?? undefined;
+        this.inputElemnt = this.shadowRoot?.querySelector("input") ?? undefined;
+        this.subMenuElement = this.shadowRoot?.querySelector(".sub-menu") ?? undefined;
 
-        window.addEventListener("resize", throttle(this._handleResize, 1000 / 60), { signal: this.abortController.signal })
+        window.addEventListener("resize", throttle(this._handleResize, 1000 / 60), { signal: this.abortController.signal });
     }
 
     disconnectedCallback(): void {
-        this.abortController.abort()
+        this.abortController.abort();
     }
 
     private _handleScroll = throttle(() => {
@@ -143,12 +143,12 @@ export class StartUp extends LitElement {
 
         this.scrollTimer = setTimeout(() => {
             this.isNotScroll = true;
-        }, 500)
+        }, 500);
 
         if (this.renaming) {
-            this.inputStyle = this._calcInputStyle()
+            this.inputStyle = this._calcInputStyle();
         }
-    }, 1000 / 60)
+    }, 1000 / 60);
 
     private _closeMask() {
         this.isSubMenuVisible = false;
@@ -160,7 +160,7 @@ export class StartUp extends LitElement {
         this.focusedProject = ev.detail.project;
         this.menuElement = ev.detail.menuElement;
 
-        this.subMenuStyle = this._calcSubMenuStyle()
+        this.subMenuStyle = this._calcSubMenuStyle();
         this.isSubMenuVisible = true;
     }
 
@@ -168,13 +168,13 @@ export class StartUp extends LitElement {
         if (this.isSubMenuVisible) {
             this.subMenuStyle = this._calcSubMenuStyle();
         }
-    }
+    };
 
     private _calcSubMenuStyle() {
         const subMenuBoundingRect = this.subMenuElement?.getBoundingClientRect();
         const menuBoudingRect = this.menuElement?.getBoundingClientRect();
         if (!menuBoudingRect || !subMenuBoundingRect) {
-            throw new Error('can not found menu div');
+            throw new Error("can not found menu div");
         }
 
         const windowWidth = window.innerWidth;
@@ -190,94 +190,94 @@ export class StartUp extends LitElement {
     }
 
     private _calcInputStyle() {
-        const nameElementRect = this.nameElement?.getBoundingClientRect()
+        const nameElementRect = this.nameElement?.getBoundingClientRect();
 
         if (!nameElementRect) {
-            throw new Error("name element rect is undefined")
+            throw new Error("name element rect is undefined");
         }
 
-        return `width:${nameElementRect.width - 4}px;left:${nameElementRect.left}px;top:${nameElementRect.top}px`
+        return `width:${nameElementRect.width - 4}px;left:${nameElementRect.left}px;top:${nameElementRect.top}px`;
     }
 
     private async _copy() {
         if (!this.focusedProject) {
-            throw new Error("menu project config or name is undefined")
+            throw new Error("menu project config or name is undefined");
         }
 
         const newProject = await copyProject(this.focusedProject);
 
         if (!newProject) {
-            throw new Error("copy project can not be loaded")
+            throw new Error("copy project can not be loaded");
         }
 
-        this.projectList = [newProject, ...this.projectList]
-        this._closeMask()
+        this.projectList = [newProject, ...this.projectList];
+        this._closeMask();
     }
 
     private _new(ev: CustomEvent) {
-        const newProjectConfig = ev.detail.config
-        this.projectList = [newProjectConfig, ...this.projectList]
+        const newProjectConfig = ev.detail.config;
+        this.projectList = [newProjectConfig, ...this.projectList];
     }
 
     private async _delete() {
         if (!this.focusedProject) {
-            throw new Error("menu project config or name is undefined")
+            throw new Error("menu project config or name is undefined");
         }
 
-        await deleteProject(this.focusedProject.name)
+        await deleteProject(this.focusedProject.name);
 
-        this.projectList = this.projectList.filter(item => item.name !== this.focusedProject?.name)
-        this._closeMask()
+        this.projectList = this.projectList.filter(item => item.name !== this.focusedProject?.name);
+        this._closeMask();
     }
 
     private _rename() {
         if (!this.inputElemnt) {
-            throw new Error("input element is undefined")
+            throw new Error("input element is undefined");
         }
 
         if (!this.focusedProject) {
-            throw new Error("focused project is undefined")
+            throw new Error("focused project is undefined");
         }
 
-        this.renaming = true
-        this._closeMask()
-        this.inputElemnt.value = this.focusedProject.name
-        this.inputElemnt.focus()
-        this.inputElemnt.setSelectionRange(0, this.inputElemnt.value.length)
-        this.inputStyle = this._calcInputStyle()
+        this.renaming = true;
+        this._closeMask();
+        this.inputElemnt.value = this.focusedProject.name;
+        this.inputElemnt.focus();
+        this.inputElemnt.setSelectionRange(0, this.inputElemnt.value.length);
+        this.inputStyle = this._calcInputStyle();
     }
 
     private async _handleInputBlur() {
         if (!this.focusedProject) {
-            throw new Error("menu project config is undefined")
+            throw new Error("menu project config is undefined");
         }
 
         if (!this.inputElemnt) {
-            throw new Error("input element is undefined")
+            throw new Error("input element is undefined");
         }
 
-        const newName = this.inputElemnt.value
+        const newName = this.inputElemnt.value;
         if (newName.length <= 0 || newName === this.focusedProject.name || !this.projectList.every(p => p.name !== newName)) {
-            this.renaming = false
+            this.renaming = false;
             return;
         }
 
         await renameProject(this.focusedProject.name, newName);
-        this.projectList = [...this.projectList.filter(item => item !== this.focusedProject), { ...this.focusedProject, name: newName }]
-        this.renaming = false
+        this.projectList = [...this.projectList.filter(item => item !== this.focusedProject), { ...this.focusedProject, name: newName }];
+        this.renaming = false;
     }
 
     render() {
         const sortedList = this.projectList.sort((a, b) => {
             return Date.parse(b.config.metadata.last_modified) - Date.parse(a.config.metadata.last_modified);
-        }).map(project => {
-            return html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`
-        })
+        }).map((project) => {
+            return html`<project-card .project=${project} @show-submenu=${this._showSubMenu}></project-card>`;
+        });
 
         const submenuClass = classMap({
             "sub-menu": true,
-            "visible": this.isSubMenuVisible
-        })
+            "visible": this.isSubMenuVisible,
+        });
 
         return html`  
             <main style=${styleMap({ "--scrollbar-thumb-color": this.isNotScroll ? null : "#888" })} @scroll=${this._handleScroll}>
@@ -293,6 +293,6 @@ export class StartUp extends LitElement {
                 <div @click=${this._delete}>delete</div>
             </div>  
             <input type="text" @blur=${this._handleInputBlur} style=${this.renaming ? this.inputStyle : ""}>
-        `
+        `;
     }
 }

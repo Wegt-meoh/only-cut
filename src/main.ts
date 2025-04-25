@@ -1,4 +1,4 @@
-import page from 'page';
+import page from "page";
 import "./components/title-bar";
 
 /**
@@ -7,9 +7,9 @@ import "./components/title-bar";
 const loadedModules = new Set<string>();
 
 function renderPage(tagName: string) {
-    const container = document.getElementById('app');
+    const container = document.getElementById("app");
     if (!container) {
-        console.error('app-root is null');
+        console.error("app-root is null");
         return;
     }
 
@@ -21,14 +21,14 @@ function renderPage(tagName: string) {
     import(`./pages/${tagName}/index.ts`).then(() => {
         loadedModules.add(tagName);
         container.innerHTML = `<${tagName}></${tagName}>`;
-    }).catch(error => {
+    }).catch((error) => {
         console.error(`can not found module for ${tagName}`, error);
     });
 }
 
-page('/', () => renderPage('start-up'));
-page('/main-work', () => renderPage('main-work'));
-page('*', () => renderPage('not-found'));
+page("/", () => renderPage("start-up"));
+page("/main-work", () => renderPage("main-work"));
+page("*", () => renderPage("not-found"));
 page.start();
 
 /**

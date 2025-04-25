@@ -1,7 +1,7 @@
-import { html, css, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { html, css, LitElement } from "lit";
+import { customElement } from "lit/decorators.js";
 
-@customElement('file-explorer')
+@customElement("file-explorer")
 export class FileExplorer extends LitElement {
     static styles = css`
        
@@ -10,6 +10,6 @@ export class FileExplorer extends LitElement {
     render() {
         return html`
             <div></div>
-        `
+        `;
     }
 }

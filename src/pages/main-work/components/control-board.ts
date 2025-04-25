@@ -1,7 +1,7 @@
-import { html, css, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { html, css, LitElement } from "lit";
+import { customElement } from "lit/decorators.js";
 
-@customElement('control-board')
+@customElement("control-board")
 export class ControlBoard extends LitElement {
     static styles = css`
        
@@ -10,6 +10,6 @@ export class ControlBoard extends LitElement {
     render() {
         return html`
         
-        `
+        `;
     }
 }

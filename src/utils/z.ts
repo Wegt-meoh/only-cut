@@ -43,7 +43,7 @@ class BooleanSchema extends Schema<boolean> {
                     throw new Error("Expected boolean");
                 }
                 return data;
-            }
+            },
         );
     }
 }
@@ -57,8 +57,8 @@ class NullSchema extends Schema<null> {
                     throw new Error("Expected null");
                 }
                 return data;
-            }
-        )
+            },
+        );
     }
 }
 
@@ -67,33 +67,36 @@ class ObjectSchema<T extends Record<string, Schema<unknown>>, R extends {
 }> extends Schema<R> {
     constructor(private shape: T) {
         function analysisTypeName(o: T) {
-            let result: any = {}
+            const result: Record<string, unknown> = {};
             for (const key in o) {
-                result[key] = o[key].typeName
+                result[key] = o[key].typeName;
             }
 
-            return JSON.stringify(result)
+            return JSON.stringify(result);
         }
 
         super(
             analysisTypeName(shape),
             (data) => {
-                if (typeof data !== "object" || data === null || Object.prototype.toString.call(data) !== '[object Object]') {
+                if (typeof data !== "object" || data === null || Object.prototype.toString.call(data) !== "[object Object]") {
                     throw new Error("Expected object");
                 }
 
-                const result: any = {};
+                const result: R = {} as R;
                 try {
                     for (const key in this.shape) {
                         if (shape.hasOwnProperty(key)) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             result[key] = shape[key].parse((data as any)[key]);
                         }
                     }
                     return result;
-                } catch (error) {
-                    throw new Error(`Expected ${this.typeName}`)
                 }
-            }
+                catch (error) {
+                    console.error(error);
+                    throw new Error(`Expected ${this.typeName}`);
+                }
+            },
         );
     }
 }
@@ -108,12 +111,14 @@ class ArraySchema<T> extends Schema<T[]> {
                 }
 
                 try {
-                    const result = data.map(item => this.elementsSchema.parse(item))
-                    return result
-                } catch (error) {
-                    throw new Error(`Expect ${this.typeName}`)
+                    const result = data.map(item => this.elementsSchema.parse(item));
+                    return result;
                 }
-            })
+                catch (error) {
+                    console.error(error);
+                    throw new Error(`Expect ${this.typeName}`);
+                }
+            });
     }
 }
 
@@ -124,13 +129,15 @@ class UnionSchema<U extends Schema<unknown>, T extends [U, U, ...U[]]> extends S
             (data) => {
                 for (const element of this.unionSchema) {
                     try {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         return element.parse(data) as any;
-                    } catch {
+                    }
+                    catch {
                         continue;
                     }
                 }
 
-                throw new Error(`Expected ${this.typeName}`)
+                throw new Error(`Expected ${this.typeName}`);
             });
     }
 }
@@ -138,19 +145,19 @@ class UnionSchema<U extends Schema<unknown>, T extends [U, U, ...U[]]> extends S
 class EnumSchema<U extends string | number, T extends [U, ...U[]]> extends Schema<{ [K in keyof T]: T[K] }[number]> {
     constructor(private values: T) {
         super(
-            `enum(${values.map(v => {
+            `enum(${values.map((v) => {
                 if (typeof v === "string") {
-                    return `"${v}"`
+                    return `"${v}"`;
                 }
-                return v
+                return v;
             }).join("|")})`,
             (data) => {
                 if (!this.values.includes(data as U)) {
                     throw new Error(`Expected ${this.typeName}`);
                 }
                 return data as { [K in keyof T]: T[K] }[number];
-            }
-        )
+            },
+        );
     }
 }
 
@@ -160,10 +167,10 @@ class LazySchema<T> extends Schema<T> {
     constructor(lazyFunc: () => Schema<T>) {
         super("lazy schema", (data: unknown) => {
             if (!this._schema) {
-                this._schema = lazyFunc()
+                this._schema = lazyFunc();
             }
-            return this._schema.parse(data)
-        })
+            return this._schema.parse(data);
+        });
     }
 }
 
@@ -173,46 +180,46 @@ type TypeOf<T> = T extends Schema<infer U> ? U : never;
 // tool function for string schema
 export const string = () => {
     return new StringSchema();
-}
+};
 
 // tool function for number schema
 export const number = () => {
     return new NumberSchema();
-}
+};
 
 // tool function for boolean schema
 export const boolean = () => {
     return new BooleanSchema();
-}
+};
 
 // tool function for null schema
 const nullObj = () => {
     return new NullSchema();
-}
+};
 
 // tool function for object schema
 export const object = <T extends Record<string, Schema<unknown>>>(shape: T) => {
     return new ObjectSchema(shape);
-}
+};
 
 // tool function for array schema
 export const array = <T>(shape: Schema<T>) => {
-    return new ArraySchema(shape)
-}
+    return new ArraySchema(shape);
+};
 
 // tool function for union schema
 export const union = <U extends Schema<unknown>, T extends [U, U, ...U[]]>(unionSchema: T) => {
     return new UnionSchema(unionSchema);
-}
+};
 
 // tool function for enum schema
 const enumSchema = <U extends string | number, T extends [U, ...U[]]>(values: T) => {
     return new EnumSchema(values);
-}
+};
 
 export const lazy = <T>(lazyFunc: () => Schema<T>) => {
-    return new LazySchema(lazyFunc)
-}
+    return new LazySchema(lazyFunc);
+};
 
-export type AnyShemaType<T> = Schema<T>
-export { enumSchema as enum, nullObj as null, type TypeOf as infer }
+export type AnyShemaType<T> = Schema<T>;
+export { enumSchema as enum, nullObj as null, type TypeOf as infer };

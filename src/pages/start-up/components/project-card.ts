@@ -7,7 +7,7 @@ import "../../../components/seperation-line";
 import "../../../components/global-mask";
 import { projectsConfigDir } from "../../../utils/path";
 
-@customElement('project-card')
+@customElement("project-card")
 export class ProjectCard extends LitElement {
     static styles = css`            
         :host{
@@ -66,14 +66,14 @@ export class ProjectCard extends LitElement {
             gap: 3px;
             font-size: 14px;                        
         }               
-    `
+    `;
 
     @property({ type: Object }) project?: MediaEditorProject;
     @state() size: string = "--KB";
 
     private _openProject() {
         if (this.project) {
-            window.location.href = `/main-work?name=${this.project.name}`
+            window.location.href = `/main-work?name=${this.project.name}`;
         }
     }
 
@@ -81,28 +81,28 @@ export class ProjectCard extends LitElement {
         const menuElement = this.shadowRoot?.querySelector(".menu");
         const nameElement = this.shadowRoot?.querySelector(".name");
         if (!menuElement) {
-            throw new Error('can not find menu in project card')
+            throw new Error("can not find menu in project card");
         }
 
         if (!nameElement) {
-            throw new Error('can not find name in project card')
+            throw new Error("can not find name in project card");
         }
 
         if (!this.project) {
-            throw new Error("project is undefined")
+            throw new Error("project is undefined");
         }
 
         this.dispatchEvent(new CustomEvent("show-submenu", {
             detail: {
                 nameElement,
                 menuElement,
-                project: this.project
+                project: this.project,
             },
             bubbles: false,
-            composed: false
+            composed: false,
         }));
 
-        event.stopPropagation()
+        event.stopPropagation();
     }
 
     protected async firstUpdated() {
@@ -117,7 +117,7 @@ export class ProjectCard extends LitElement {
         const totalTime = firstTrack ? firstTrack.clips.reduce((prev, curr) => prev + curr.end_time - curr.start_time, 0) : 0;
         const cover_path = this.project?.config.metadata.cover_path;
         const truncatedName = ellipsisMiddleText(this.project?.name ?? "", "14px", 100);
-        const nameSpan = truncatedName === this.project?.name ? html`<span class="name">${truncatedName}</span>` : html`<span class="name" title=${this.project?.name ?? ""}>${truncatedName}</span>`
+        const nameSpan = truncatedName === this.project?.name ? html`<span class="name">${truncatedName}</span>` : html`<span class="name" title=${this.project?.name ?? ""}>${truncatedName}</span>`;
 
         return html`
             <div class="cover" @click=${this._openProject}>
@@ -130,6 +130,6 @@ export class ProjectCard extends LitElement {
             <div class="desc">
                 ${this.size} <seperation-line></seperation-line> ${formatTime(totalTime)}
             </div>                      
-        `
+        `;
     }
 }

@@ -9,18 +9,18 @@ import { invoke } from "@tauri-apps/api/core";
 import { generateKey, obfuscateData, deobfuscateData } from "./cypher";
 
 export async function persistProjectConfig(project: MediaEditorProject) {
-    const { config, name } = project
-    const projectDirPath = await join(await projectsConfigDir(), name)
+    const { config, name } = project;
+    const projectDirPath = await join(await projectsConfigDir(), name);
     const key = generateKey(16);
     const obfuscatedConfig = obfuscateData(config, key);
 
     if (!await exists(projectDirPath)) {
-        throw new Error(`project path: "${projectDirPath}" is not exists`)
+        throw new Error(`project path: "${projectDirPath}" is not exists`);
     }
 
     // write the config file
     await writeTextFile(await join(projectDirPath, configFileName), obfuscatedConfig);
-    //write the key file
+    // write the key file
     await writeTextFile(await join(projectDirPath, keyFileName), key);
 }
 
@@ -31,7 +31,8 @@ export async function loadProjectConfig(name: string) {
         const obfuscatedString = await readTextFile(await join(projectDirPath, configFileName));
         const projectConfig = deobfuscateData(obfuscatedString, key);
         return projectConfig;
-    } catch (error) {
+    }
+    catch (error) {
         console.error(error);
         return null;
     }
@@ -46,96 +47,97 @@ export async function genertateEditorConfig() {
             created_at: now,
             last_modified: now,
             version: await getVersion(),
-            cover_path: null
+            cover_path: null,
         },
         settings: { framerate: null, output_format: null, resolution: null },
         state: { ui: { zoom_level: 1, current_time_cursor: 0 } },
-        timeline: { tracks: [] }
-    }
+        timeline: { tracks: [] },
+    };
 
     return MediaEditorSchema.parse(config);
 }
 
 async function createUniqueProjectDir(name: string) {
-    const projectConfigDirPath = await projectsConfigDir()
+    const projectConfigDirPath = await projectsConfigDir();
     const uniqueName = await getUniqueName(projectConfigDirPath, name);
-    const uniquePath = await join(projectConfigDirPath, uniqueName)
+    const uniquePath = await join(projectConfigDirPath, uniqueName);
     await mkdir(uniquePath, { recursive: true });
-    return uniqueName
+    return uniqueName;
 }
 
 export async function copyProject(project: MediaEditorProject) {
-    const newProjectName = await createUniqueProjectDir(`${project.name}-${copyText()}`)
+    const newProjectName = await createUniqueProjectDir(`${project.name}-${copyText()}`);
     const now = new Date().toLocaleString();
-    const newMetadata: MediaEditorConfig['metadata'] = {
+    const newMetadata: MediaEditorConfig["metadata"] = {
         ...project.config.metadata,
         last_modified: now,
         created_at: now,
         version: await getVersion(),
-    }
+    };
 
-    await persistProjectConfig({ name: newProjectName, config: { ...project.config, metadata: newMetadata } })
+    await persistProjectConfig({ name: newProjectName, config: { ...project.config, metadata: newMetadata } });
 
-    const config = await loadProjectConfig(newProjectName)
+    const config = await loadProjectConfig(newProjectName);
     if (!config) {
-        throw new Error("can not load copyed project")
+        throw new Error("can not load copyed project");
     }
-    return { name: newProjectName, config }
+    return { name: newProjectName, config };
 }
 
 export async function createNewProject() {
-    // create project directory    
-    const uniquePath = await createUniqueProjectDir(getCurrentDate())
-    const uniqueName = await basename(uniquePath)
+    // create project directory
+    const uniquePath = await createUniqueProjectDir(getCurrentDate());
+    const uniqueName = await basename(uniquePath);
 
-    // generate project config file    
+    // generate project config file
     const projectConfig = await genertateEditorConfig();
-    const project = { config: projectConfig, name: uniqueName }
+    const project = { config: projectConfig, name: uniqueName };
     await persistProjectConfig(project);
-    return project
+    return project;
 }
 
 export async function deleteProject(name: string) {
-    const projectPath = await join(await projectsConfigDir(), name)
+    const projectPath = await join(await projectsConfigDir(), name);
     if (!await exists(projectPath)) {
         return;
     }
 
     try {
-        await invoke("move_to_trash", { path: projectPath })
-    } catch (error) {
-        console.error(error)
+        await invoke("move_to_trash", { path: projectPath });
+    }
+    catch (error) {
+        console.error(error);
     }
 }
 
 export async function listAllProjects() {
     const entryList = await readDir(await projectsConfigDir());
-    const dirEntryList = entryList.filter(entry => entry.isDirectory)
+    const dirEntryList = entryList.filter(entry => entry.isDirectory);
     const projectResultList = await Promise.all(
-        dirEntryList.map(async (entry) => ({
+        dirEntryList.map(async entry => ({
             name: entry.name,
-            config: await loadProjectConfig(entry.name)
-        }))
-    )
-    return projectResultList.filter((project): project is { name: string, config: MediaEditorConfig } => project.config !== null)
+            config: await loadProjectConfig(entry.name),
+        })),
+    );
+    return projectResultList.filter((project): project is { name: string, config: MediaEditorConfig } => project.config !== null);
 }
 
 export async function updateProject(project: MediaEditorProject) {
-    await persistProjectConfig(project)
+    await persistProjectConfig(project);
 }
 
 export async function renameProject(oldName: string, newName: string) {
-    const oldProjectDirPath = await join(await projectsConfigDir(), oldName)
+    const oldProjectDirPath = await join(await projectsConfigDir(), oldName);
 
     if (!await exists(oldProjectDirPath)) {
-        throw new Error("the old project config path is not exsits")
+        throw new Error("the old project config path is not exsits");
     }
 
-    const newProjectDirPath = await join(await projectsConfigDir(), newName)
+    const newProjectDirPath = await join(await projectsConfigDir(), newName);
 
     if (await exists(newProjectDirPath)) {
-        throw new Error("the new project config path is already exists")
+        throw new Error("the new project config path is already exists");
     }
 
-    await rename(oldProjectDirPath, newProjectDirPath)
+    await rename(oldProjectDirPath, newProjectDirPath);
 }

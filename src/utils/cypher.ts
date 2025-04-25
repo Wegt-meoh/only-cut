@@ -14,24 +14,26 @@ export function deobfuscateData(data: string, key: string): MediaEditorConfig {
 
     try {
         return MediaEditorSchema.parse(jsonObj);
-    } catch (error) {
-        throw new Error('Media editor project is broken or uncompatible')
+    }
+    catch (error) {
+        console.error(error);
+        throw new Error("Media editor project is broken or uncompatible");
     }
 }
 
 export function xorMask(data: string, key: string) {
     return data
-        .split('')
+        .split("")
         .map((char, index) => String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(index % key.length)))
-        .join('');
+        .join("");
 }
 
 export function generateKey(length: number) {
     if (length <= 0) {
-        throw new Error('length needs to be larger than 0');
+        throw new Error("length needs to be larger than 0");
     }
 
     const array = new Uint8Array(length);
     crypto.getRandomValues(array);
-    return Array.from(array, byte => String.fromCharCode(byte % 94 + 33)).join('');
+    return Array.from(array, byte => String.fromCharCode(byte % 94 + 33)).join("");
 }

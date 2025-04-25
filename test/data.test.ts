@@ -1,12 +1,12 @@
-import { MediaEditorSchema } from '../src/schemas/project-config';
-import { describe, it, expect } from 'vitest';
+import { MediaEditorSchema } from "../src/schemas/project-config";
+import { describe, it, expect } from "vitest";
 
-const exampleMediaEditorProject: any = {
+const exampleMediaEditorProject = {
     metadata: {
         name: "Example Project",
         version: "1.0.0",
         created_at: "2025-02-20T12:00:00Z",
-        last_modified: "2025-02-20T12:00:00Z"
+        last_modified: "2025-02-20T12:00:00Z",
     },
     assets: [
         {
@@ -17,9 +17,9 @@ const exampleMediaEditorProject: any = {
                 duration: 120,
                 resolution: "1920x1080",
                 codec: "H.264",
-                bitrate: "320kbps"
-            }
-        }
+                bitrate: "320kbps",
+            },
+        },
     ],
     timeline: {
         tracks: [
@@ -31,23 +31,23 @@ const exampleMediaEditorProject: any = {
                         asset_id: "asset1",
                         start_time: 0,
                         end_time: 120,
-                        position: 0
-                    }
-                ]
-            }
-        ]
+                        position: 0,
+                    },
+                ],
+            },
+        ],
     },
     settings: {
         resolution: "1920x1080",
         framerate: 30,
-        output_format: "mp4"
+        output_format: "mp4",
     },
     state: {
         ui: {
             zoom_level: 1.0,
-            current_time_cursor: 0
-        }
-    }
+            current_time_cursor: 0,
+        },
+    },
 };
 
 describe("Media Editor Project Config", () => {

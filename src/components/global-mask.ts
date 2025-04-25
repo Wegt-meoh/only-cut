@@ -1,7 +1,7 @@
-import { html, css, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { html, css, LitElement } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
-@customElement('global-mask')
+@customElement("global-mask")
 export class GlobalMask extends LitElement {
     static styles = css`
         .mask {
@@ -37,20 +37,20 @@ export class GlobalMask extends LitElement {
 
     render() {
         return html`
-            <div class="mask ${this.visible ? 'visible' : ''}" @click=${this.handleMaskClick}></div>
+            <div class="mask ${this.visible ? "visible" : ""}" @click=${this.handleMaskClick}></div>
         `;
     }
 
     handleMaskClick(event: Event) {
-        if (event.target === this.shadowRoot?.querySelector('.mask')) {
+        if (event.target === this.shadowRoot?.querySelector(".mask")) {
             this.hideMask();
         }
 
-        event.stopPropagation()
+        event.stopPropagation();
     }
 
     hideMask() {
         this.visible = false;
-        this.dispatchEvent(new CustomEvent('mask-closed'));
+        this.dispatchEvent(new CustomEvent("mask-closed"));
     }
 }

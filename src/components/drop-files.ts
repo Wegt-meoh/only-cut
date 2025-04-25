@@ -1,13 +1,12 @@
-import { open } from '@tauri-apps/plugin-dialog'
+import { open } from "@tauri-apps/plugin-dialog";
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
-import "../components/title-bar.ts"
-import { listen, UnlistenFn } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
+import "../components/title-bar.ts";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { invoke } from "@tauri-apps/api/core";
 
-@customElement('drop-files')
+@customElement("drop-files")
 export class DropFiles extends LitElement {
-
     static styles = css`
         :host{
             user-select: none;
@@ -25,23 +24,23 @@ export class DropFiles extends LitElement {
         :host:hover{
             background: var(--active-grey-color);            
         }
-    `
+    `;
 
     private unlisten: UnlistenFn | null = null;
 
     connectedCallback(): void {
         super.connectedCallback();
-        listen<string>('tauri://drag-drop', e => {
-            invoke('import-files', { paths: [e.payload] })
-        }).then(unlisten => {
+        listen<string>("tauri://drag-drop", (e) => {
+            invoke("import-files", { paths: [e.payload] });
+        }).then((unlisten) => {
             this.unlisten = unlisten;
-        })
+        });
     }
 
     disconnectedCallback(): void {
-        super.disconnectedCallback()
+        super.disconnectedCallback();
         if (this.unlisten) {
-            console.log('unlisten drag and drop')
+            console.log("unlisten drag and drop");
             this.unlisten();
             this.unlisten = null;
         }
@@ -52,17 +51,18 @@ export class DropFiles extends LitElement {
             const selected = await open({
                 multiple: true, // Allow selecting only one file
                 filters: [
-                    { name: 'Image', extensions: ['png', 'jpg', 'jpeg', 'bmp', 'gif', 'tiff', 'webp', 'raw'] },
-                    { name: 'Audio', extensions: ['mp3', 'aac', 'wav', 'flac', 'ogg', 'aiff', 'opus'] },
-                    { name: 'Video', extensions: ['mp4', 'mkv', 'avi', 'mov', 'flv', 'webm', 'wmv'] }
+                    { name: "Image", extensions: ["png", "jpg", "jpeg", "bmp", "gif", "tiff", "webp", "raw"] },
+                    { name: "Audio", extensions: ["mp3", "aac", "wav", "flac", "ogg", "aiff", "opus"] },
+                    { name: "Video", extensions: ["mp4", "mkv", "avi", "mov", "flv", "webm", "wmv"] },
                 ],
             });
 
             if (selected) {
-                invoke('import-files', { paths: [...selected] })
+                invoke("import-files", { paths: [...selected] });
             }
-        } catch (error) {
-            console.error('Error selecting file:', error);
+        }
+        catch (error) {
+            console.error("Error selecting file:", error);
         }
     }
 
@@ -71,6 +71,6 @@ export class DropFiles extends LitElement {
             <div @click="${this._selectFiles}">
                 drop file(s) here
             </div>        
-        `
+        `;
     }
 }

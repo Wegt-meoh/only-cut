@@ -1,7 +1,7 @@
 import { css, html, LitElement } from "lit";
 import { customElement } from "lit/decorators.js";
 
-@customElement('not-found')
+@customElement("not-found")
 export class NotFound extends LitElement {
     static styles = css`
         main{
@@ -26,6 +26,6 @@ export class NotFound extends LitElement {
             <span>Not found</span>
             <a href='/'>back</a>
         </main>
-        `
+        `;
     }
 }
