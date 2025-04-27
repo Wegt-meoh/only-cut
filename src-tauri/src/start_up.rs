@@ -1,4 +1,4 @@
-use tauri::App;
+use tauri::{App, WebviewWindow};
 
 const MIN_WIDTH: f64 = 843.0;
 const MIN_HEIGHT: f64 = 540.0;
@@ -20,11 +20,6 @@ fn create_window(app: &App) {
     .transparent(true)
     .shadow(true)
     .build();
-
-    #[cfg(target_os = "macos")]
-    app_handle
-        .set_activation_policy(tauri::ActivationPolicy::Accessory)
-        .unwrap();
 
     #[cfg(target_os = "macos")]
     let window = tauri::WebviewWindowBuilder::new(
@@ -53,7 +48,14 @@ fn create_window(app: &App) {
     .build();
 
     // center the window positon
-    let window = window.unwrap();
+    center_window_position(&window.unwrap());
+}
+
+pub fn start_up(app: &App) {
+    create_window(app);
+}
+
+pub fn center_window_position(window: &WebviewWindow) {
     let monitor = window.primary_monitor().unwrap().unwrap();
     let monitor_position = monitor.position();
     let window_size = window.outer_size().unwrap();
@@ -70,8 +72,4 @@ fn create_window(app: &App) {
         .unwrap();
     let _ = window.show();
     let _ = window.set_focus();
-}
-
-pub fn start_up(app: &App) {
-    create_window(app);
 }
